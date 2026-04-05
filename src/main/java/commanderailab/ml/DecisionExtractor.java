@@ -31,25 +31,28 @@ public class DecisionExtractor {
 
     // ── Patterns ──────────────────────────────────────────────
 
-    // Turn boundary: "Turn 5 (Ai(1)-Name)" or "== Turn 5 (Ai(1)-Name) =="
+    // Turn boundary: "Turn 5 (Ai(1)-Name)" or "Turn: Turn 5 (Ai(1)-Name)"
+    // Forge verbose output prefixes with "Turn: "
     private static final Pattern TURN_PATTERN =
-            Pattern.compile("Turn\\s+(\\d+)\\s+\\(Ai\\((\\d+)\\)-", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("Turn(?::\\s*Turn)?\\s+(\\d+)\\s+\\(Ai\\((\\d+)\\)-", Pattern.CASE_INSENSITIVE);
 
     // Phase indicator: various Forge phase strings
     private static final Pattern PHASE_PATTERN =
             Pattern.compile("(?:Phase|Step):\\s*(.*?)(?:\\s*$|\\s*-)", Pattern.CASE_INSENSITIVE);
 
-    // Cast: "Ai(1)-Name casts CardName."
+    // Cast: "Ai(1)-Name casts CardName." or "Add To Stack: Ai(1)-Name cast CardName"
+    // Forge verbose output uses "cast" (no s) and may have "Add To Stack:" prefix
     private static final Pattern CAST_PATTERN =
-            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+casts\\s+(.+?)\\.", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+casts?\\s+(.+?)(?:\\s*\\(\\d+\\))?(?:\\.|$)", Pattern.CASE_INSENSITIVE);
 
-    // Land play: "Ai(1)-Name plays LandName."
+    // Land play: "Ai(1)-Name plays LandName." or "Land: Ai(1)-Name played LandName (76)"
+    // Forge verbose output uses "played" and may have "Land:" prefix + card ID suffix
     private static final Pattern LAND_PATTERN =
-            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+plays\\s+(.+?)\\.", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+play(?:s|ed)\\s+(.+?)(?:\\s*\\(\\d+\\))?(?:\\.|$)", Pattern.CASE_INSENSITIVE);
 
-    // Draw: "Ai(1)-Name draws CardName."
+    // Draw: "Ai(1)-Name draws CardName." or "Ai(1)-Name drew CardName"
     private static final Pattern DRAW_PATTERN =
-            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+draws\\s+(.+?)\\.", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("Ai\\((\\d+)\\)-[^\\s].*?\\s+(?:draws|drew)\\s+(.+?)(?:\\s*\\(\\d+\\))?(?:\\.|$)", Pattern.CASE_INSENSITIVE);
 
     // Attack: "Ai(1)-Name attacks with" or "declares attackers"
     private static final Pattern ATTACK_PATTERN =

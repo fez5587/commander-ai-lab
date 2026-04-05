@@ -263,6 +263,7 @@ function renderHandZone(playerIdx) {
   if (!handEl) return;
 
   const hand = player.zones.hand || [];
+  const hideFaces = !!player.isAI;  // AI hands render face-down
 
   // Update count badge
   const countEl = document.getElementById('hand-count-' + pNum);
@@ -280,6 +281,14 @@ function renderHandZone(playerIdx) {
   const maxShow = Math.min(hand.length, 7); // limit thumbnails
   for (let i = 0; i < maxShow; i++) {
     const card = hand[i];
+    if (hideFaces) {
+      // AI hand — show a face-down card back (no name, no image, no preview)
+      thumbsHtml +=
+        '<div class="hand-thumb face-down" ' +
+        'data-player="' + playerIdx + '" data-hand-index="' + i + '" ' +
+        'title="Opponent hand (hidden)"></div>';
+      continue;
+    }
     const imgSrc = card.imageUrl || '';
     const escapedName = (card.name || '').replace(/'/g, "\\'");
     const escapedType = (card.typeLine || '').replace(/'/g, "\\'");
@@ -301,7 +310,11 @@ function renderHandZone(playerIdx) {
   }
 
   if (hand.length > maxShow) {
-    thumbsHtml += '<div class="hand-thumb" onclick="openZoneModal(' + playerIdx + ')" style="background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.4);">+' + (hand.length - maxShow) + '</div>';
+    if (hideFaces) {
+      thumbsHtml += '<div class="hand-thumb face-down overflow" title="Opponent hand (hidden)">+' + (hand.length - maxShow) + '</div>';
+    } else {
+      thumbsHtml += '<div class="hand-thumb" onclick="openZoneModal(' + playerIdx + ')" style="background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.4);">+' + (hand.length - maxShow) + '</div>';
+    }
   }
 
   handEl.innerHTML = thumbsHtml;
@@ -873,19 +886,28 @@ function renderZoneModal() {
   const player = gameState.players[zoneModalPlayerId];
   if (!player) return;
 
+  // AI players' hands are private — don't allow the Hand tab to be active
+  if (player.isAI && activeZoneTab === 'hand') {
+    activeZoneTab = 'graveyard';
+  }
+
   const titleEl = document.getElementById('zone-modal-title');
   if (titleEl) titleEl.textContent = player.name + "'s Zones";
 
   // Render tabs
   const tabsEl = document.getElementById('zone-modal-tabs');
   if (tabsEl) {
-    const zones = [
+    let zones = [
       { key: 'graveyard', icon: '&#x2620;', label: 'Graveyard' },
       { key: 'exile', icon: '&#x2B21;', label: 'Exile' },
       { key: 'command', icon: '&#x1F451;', label: 'Command' },
       { key: 'hand', icon: '&#x270B;', label: 'Hand' },
       { key: 'library', icon: '&#x1F4DA;', label: 'Library' },
     ];
+    // Strip the Hand tab when inspecting an AI opponent (hand is private)
+    if (player.isAI) {
+      zones = zones.filter(z => z.key !== 'hand');
+    }
 
     tabsEl.innerHTML = zones.map(z => {
       const count = (player.zones[z.key] || []).length;

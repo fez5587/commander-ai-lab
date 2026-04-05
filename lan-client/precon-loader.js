@@ -8,11 +8,74 @@
 
 'use strict';
 
-// In-memory Scryfall image cache: cardName -> { imageUrl, typeLine, oracleText, manaCost, power, toughness }
-const _scryfallCache = {};
-
 // Scryfall collection endpoint — accepts up to 75 card identifiers per call
 const SCRYFALL_COLLECTION_URL = 'https://api.scryfall.com/cards/collection';
+
+// ────────────────────────────────────────────────────────────
+// Scryfall image cache: cardName -> { imageUrl, typeLine, ... }
+// Persisted to localStorage so repeat games don't re-hit Scryfall.
+// ────────────────────────────────────────────────────────────
+const _SCRYFALL_CACHE_KEY = 'commanderLab.scryfallCache.v1';
+const _SCRYFALL_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;  // 30 days
+const _SCRYFALL_CACHE_MAX_ENTRIES = 20000;
+
+let _scryfallCache = {};
+(function _loadScryfallCacheFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(_SCRYFALL_CACHE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return;
+    const now = Date.now();
+    const stamp = parsed.__stamp || 0;
+    if (now - stamp > _SCRYFALL_CACHE_TTL_MS) {
+      console.log('[scryfall-cache] expired (> 30 days), clearing');
+      localStorage.removeItem(_SCRYFALL_CACHE_KEY);
+      return;
+    }
+    delete parsed.__stamp;
+    _scryfallCache = parsed;
+    const n = Object.keys(_scryfallCache).length;
+    console.log('[scryfall-cache] loaded ' + n + ' entries from localStorage');
+  } catch (e) {
+    console.warn('[scryfall-cache] load failed:', e);
+    try { localStorage.removeItem(_SCRYFALL_CACHE_KEY); } catch (_) {}
+    _scryfallCache = {};
+  }
+})();
+
+let _scryfallCacheSaveTimer = null;
+function _persistScryfallCache() {
+  // Debounced — coalesce rapid writes during batch enrichment
+  if (_scryfallCacheSaveTimer) return;
+  _scryfallCacheSaveTimer = setTimeout(function () {
+    _scryfallCacheSaveTimer = null;
+    try {
+      // Trim to MAX_ENTRIES if over (drop entries with no imageUrl first)
+      const keys = Object.keys(_scryfallCache);
+      if (keys.length > _SCRYFALL_CACHE_MAX_ENTRIES) {
+        const trimmed = {};
+        const sorted = keys.sort((a, b) =>
+          (_scryfallCache[b].imageUrl ? 1 : 0) - (_scryfallCache[a].imageUrl ? 1 : 0)
+        ).slice(0, _SCRYFALL_CACHE_MAX_ENTRIES);
+        for (const k of sorted) trimmed[k] = _scryfallCache[k];
+        _scryfallCache = trimmed;
+      }
+      const payload = Object.assign({ __stamp: Date.now() }, _scryfallCache);
+      localStorage.setItem(_SCRYFALL_CACHE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // Quota exceeded — clear and skip. Cache will rebuild next session.
+      console.warn('[scryfall-cache] persist failed (quota?):', e);
+      try { localStorage.removeItem(_SCRYFALL_CACHE_KEY); } catch (_) {}
+    }
+  }, 750);
+}
+
+function clearScryfallCache() {
+  _scryfallCache = {};
+  try { localStorage.removeItem(_SCRYFALL_CACHE_KEY); } catch (_) {}
+  console.log('[scryfall-cache] cleared');
+}
 
 // ============================================================
 // startGameWithDecks
@@ -168,18 +231,32 @@ async function enrichAllZonesWithScryfall() {
 
   // Gather all unique card names across all players and all zones
   const nameSet = new Set();
+  let totalCards = 0;
+  let cacheHits = 0;
   for (const player of gameState.players) {
     for (const zone of Object.values(player.zones)) {
       for (const card of zone) {
-        if (card.name && !_scryfallCache[card.name]) nameSet.add(card.name);
+        if (!card.name) continue;
+        totalCards++;
+        if (_scryfallCache[card.name]) {
+          cacheHits++;
+        } else {
+          nameSet.add(card.name);
+        }
       }
     }
   }
 
-  if (nameSet.size === 0) return;
+  if (nameSet.size === 0) {
+    // Everything was in cache — just apply and bail, no network
+    addLogEntry('\u2705 Card images loaded from cache (' + cacheHits + ' cards).');
+    _applyScryfallDataToAllCards();
+    return;
+  }
 
   const names = Array.from(nameSet);
-  addLogEntry('\uD83C\uDF0D Fetching card images from Scryfall (' + names.length + ' unique cards)...');
+  const hitRatio = totalCards > 0 ? Math.round((cacheHits / totalCards) * 100) : 0;
+  addLogEntry('\uD83C\uDF0D Fetching ' + names.length + ' new cards from Scryfall (' + hitRatio + '% cache hit rate)...');
 
   // Split into batches of 75 (Scryfall max)
   const BATCH = 75;
@@ -234,6 +311,8 @@ async function _fetchScryfallBatch(names) {
   for (const name of names) {
     if (!_scryfallCache[name]) _scryfallCache[name] = { imageUrl: '', typeLine: '', oracleText: '', manaCost: '', cmc: 0, power: '', toughness: '' };
   }
+
+  _persistScryfallCache();
 }
 
 function _applyScryfallDataToAllCards() {

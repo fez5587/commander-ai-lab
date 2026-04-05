@@ -32,6 +32,9 @@ embeddings/
 checkpoints/
 imported-decks/
 
+# User-created decks (generated at runtime, not committed)
+user-decks/*.dck
+
 # OS
 .DS_Store
 Thumbs.db

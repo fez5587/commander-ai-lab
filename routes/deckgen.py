@@ -1320,7 +1320,7 @@ async def deck_gen_v3_status():
     return {
         'initialized': _coach._deck_gen_v3 is not None,
         'anthropic_configured': bool(CFG.anthropic_api_key),
-        'model': getattr(_coach._deck_gen_v3, 'model', getattr(getattr(_coach._deck_gen_v3, 'anthropic_client', None), 'model', 'ollama/gpt-oss:20b')) if _coach._deck_gen_v3 else None,
+        'model': getattr(_coach._deck_gen_v3, 'model', getattr(getattr(_coach._deck_gen_v3, 'anthropic_client', None), 'model', 'claude-opus-4-20250514')) if _coach._deck_gen_v3 else None,
         'embeddings_loaded': False,
         'embedding_cards': 0,
         'error': _coach._deck_gen_v3_error,
@@ -1341,7 +1341,7 @@ async def deck_gen_v3_generate(req: DeckGenV3Request):
       6. Return complete deck with substitution data
     """
     if _coach._deck_gen_v3 is None:
-        raise HTTPException(503, 'V3 Deck Generator not initialized. Ensure Ollama is running with gpt-oss:20b model.')
+        raise HTTPException(503, 'V3 Deck Generator not initialized. Ensure the Anthropic API key is configured.')
 
     if not req.commander_name or len(req.commander_name.strip()) < 2:
         raise HTTPException(400, 'Commander name is required (min 2 chars)')

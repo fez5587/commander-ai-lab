@@ -39,16 +39,41 @@
     // ── Init: load decks ──
     async function loadDecks() {
         try {
-            const res = await fetch('/api/decks');
+            const res = await fetch('/api/lab/decks');
             if (!res.ok) return;
             const data = await res.json();
-            const decks = data.decks || data || [];
-            decks.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.textContent = d.name + (d.commander ? ' (' + d.commander + ')' : '');
-                deckSelect.appendChild(opt);
-            });
+            const decks = data.decks || [];
+
+            // Split into groups by source
+            const dbDecks    = decks.filter(d => d.source === 'deckbuilder');
+            const forgeDecks = decks.filter(d => d.source === 'forge');
+
+            // My Decks — from Deck Builder (stored in SQLite)
+            if (dbDecks.length > 0) {
+                const group = document.createElement('optgroup');
+                group.label = '\u{1F0CF} My Decks (Deck Builder)';
+                dbDecks.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = 'db:' + d.deck_id;
+                    opt.textContent = d.name + (d.commander ? ' (' + d.commander + ')' : '');
+                    group.appendChild(opt);
+                });
+                deckSelect.appendChild(group);
+            }
+
+            // Forge .dck files (user-decks/, precon-decks/, sample-decks/)
+            if (forgeDecks.length > 0) {
+                const group = document.createElement('optgroup');
+                group.label = '\u{1F4C1} Deck Files (.dck)';
+                forgeDecks.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name.replace(/_/g, ' ');
+                    group.appendChild(opt);
+                });
+                deckSelect.appendChild(group);
+            }
+
         } catch (e) {
             console.warn('Could not load decks:', e);
         }
@@ -165,18 +190,17 @@
 
     // ── Run from deck ID ──
     runBtn.addEventListener('click', async () => {
-        const deckId = parseInt(deckSelect.value);
-        if (!deckId) return;
+        const val = deckSelect.value;
+        if (!val) return;
 
-        const numGames = parseInt(numGamesInput.value) || 10;
+        const numGames   = parseInt(numGamesInput.value) || 10;
         const recordLogs = recordLogsChk.checked;
         const useDeepSeek = oppSelect.value === 'deepseek';
 
-        // If DeepSeek selected but not connected, try to connect first
         if (useDeepSeek && !dsConnected) {
             await connectDeepSeek();
             if (!dsConnected) {
-                alert('Could not connect to DeepSeek. Make sure LM Studio is running at ' + dsApiBase.value);
+                alert('Could not connect to DeepSeek. Make sure Ollama is running at ' + dsApiBase.value);
                 return;
             }
             await applyDeepSeekConfig();
@@ -189,16 +213,35 @@
         hideResults();
 
         try {
-            const endpoint = useDeepSeek ? '/api/sim/run-deepseek' : '/api/sim/run-from-deck';
+            let endpoint, body;
+
+            if (val.startsWith('db:')) {
+                // Deck Builder deck — auto-export to user-decks/ first
+                const deckId = parseInt(val.replace('db:', ''));
+
+                const exportRes = await fetch(`/api/decks/${deckId}/export-to-sim`, { method: 'POST' });
+                const exportData = await exportRes.json();
+                if (!exportData.success) throw new Error('Export failed: ' + (exportData.detail || 'unknown'));
+
+                endpoint = useDeepSeek ? '/api/sim/run-deepseek' : '/api/sim/run-from-deck';
+                body = { deckId, numGames, recordLogs };
+
+            } else {
+                // File-based deck (already a .dck)
+                endpoint = useDeepSeek ? '/api/sim/run-deepseek' : '/api/sim/run-from-deck';
+                body = { deckName: val, numGames, recordLogs };
+            }
+
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ deckId, numGames, recordLogs }),
+                body: JSON.stringify(body),
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             currentSimId = data.simId;
             startPolling();
+
         } catch (e) {
             alert('Error: ' + e.message);
             resetRunBtn();

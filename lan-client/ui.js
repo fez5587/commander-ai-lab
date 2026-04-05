@@ -1407,16 +1407,81 @@ function switchDeckTab(playerIdx, tab) {
     case 'mydecks':
       content.innerHTML =
         '<div class="deck-mydecks-content">' +
-          '<div class="deck-tab-empty">' +
-            '<div style="margin-bottom:8px;">Import a decklist:</div>' +
-            '<textarea class="deck-import-textarea" id="deck-import-' + playerIdx + '" ' +
-            'placeholder="Paste decklist here...\n1 Sol Ring\n1 Command Tower\n..."></textarea>' +
-            '<button class="btn btn-sm" style="margin-top:6px;" ' +
-            'onclick="importDeckFromTextarea(' + playerIdx + ')">Import Decklist</button>' +
+          '<div class="deck-mydecks-list" id="mydecks-list-' + playerIdx + '">' +
+            '<div style="color:var(--color-text-faint,#888);font-size:12px;padding:12px;">Loading user decks...</div>' +
           '</div>' +
         '</div>';
+      _loadMyDecksTab(playerIdx);
       break;
   }
+}
+
+function _loadMyDecksTab(playerIdx) {
+  var listEl = document.getElementById('mydecks-list-' + playerIdx);
+  if (!listEl) return;
+
+  var apiBase = (typeof LAB_API_BASE !== 'undefined' && LAB_API_BASE) ? LAB_API_BASE : '';
+  fetch(apiBase + '/api/lab/decks')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var decks = (data.decks || []).filter(function(d) { return d.source === 'deckbuilder'; });
+      if (decks.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--color-text-faint,#888);font-size:12px;padding:12px;">No saved decks. Use the Deck Builder or Auto Gen to create one.</div>';
+        return;
+      }
+
+      var html = '';
+      decks.forEach(function(d) {
+        var name = d.name || 'Untitled';
+        var cmdr = d.commander || d.commander_name || '';
+        var count = d.card_count || d.total_cards || 0;
+        html += '<button class="deck-precon-item" onclick="selectUserDeck(' + playerIdx + ',' + d.deck_id + ',\'' + name.replace(/'/g, "\\'") + '\')">' +
+          '<span class="deck-precon-name">' + name.replace(/</g, '&lt;') + '</span>' +
+          '<span class="deck-precon-cmdr">' + (cmdr ? cmdr.replace(/</g, '&lt;') + ' \u2014 ' : '') + count + ' cards</span>' +
+        '</button>';
+      });
+      listEl.innerHTML = html;
+    })
+    .catch(function(e) {
+      console.warn('[_loadMyDecksTab] Error:', e);
+      listEl.innerHTML = '<div style="color:var(--color-text-faint,#888);font-size:12px;padding:12px;">Could not load decks. Is the server running?</div>';
+    });
+}
+
+function selectUserDeck(playerIdx, deckId, deckName) {
+  var statusEl = document.getElementById('deck-status-' + playerIdx);
+  if (statusEl) { statusEl.textContent = 'Exporting...'; statusEl.className = 'deck-select-status'; }
+
+  // Highlight selected button
+  var listEl = document.getElementById('mydecks-list-' + playerIdx);
+  if (listEl) {
+    listEl.querySelectorAll('.deck-precon-item').forEach(function(b) { b.classList.remove('selected'); });
+    // Find the clicked button
+    listEl.querySelectorAll('.deck-precon-item').forEach(function(b) {
+      if (b.querySelector('.deck-precon-name') && b.querySelector('.deck-precon-name').textContent === deckName) {
+        b.classList.add('selected');
+      }
+    });
+  }
+
+  // Export to .dck then store the choice
+  var apiBase = (typeof LAB_API_BASE !== 'undefined' && LAB_API_BASE) ? LAB_API_BASE : '';
+  fetch(apiBase + '/api/decks/' + deckId + '/export-to-sim', { method: 'POST' })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+      if (result.success) {
+        if (typeof setupDeckChoices !== 'undefined') {
+          setupDeckChoices[playerIdx] = { type: 'user-deck', deckName: result.deckName, fileName: result.deckName + '.dck' };
+        }
+        if (statusEl) { statusEl.textContent = deckName + ' (' + (result.totalCards || '?') + ' cards)'; statusEl.className = 'deck-select-status loaded'; }
+      } else {
+        if (statusEl) { statusEl.textContent = 'Export failed'; statusEl.className = 'deck-select-status'; }
+      }
+    })
+    .catch(function(e) {
+      console.error('[selectUserDeck] Export failed:', e);
+      if (statusEl) { statusEl.textContent = 'Export error'; statusEl.className = 'deck-select-status'; }
+    });
 }
 
 function filterPrecons(playerIdx, query) {

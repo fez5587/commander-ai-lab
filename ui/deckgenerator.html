@@ -142,11 +142,10 @@
                         <div class="dg-model-row">
                             <label class="dg-label">
                                 AI Model
-                                <span class="tip-icon" data-tip="The local LLM used to generate the deck list. Larger models produce better card selections but are slower. Requires Ollama running locally with the selected model pulled.">?</span>
+                                <span class="tip-icon" data-tip="Deck generation is powered by Claude Opus 4, Anthropic's most capable model.">?</span>
                             </label>
-                            <select class="dg-select" id="dg-model">
-                                <option value="gpt-oss:20b" selected>gpt-oss:20b (Local Ollama)</option>
-                            </select>
+                            <input type="hidden" id="dg-model" value="claude-opus-4-20250514" />
+                            <span style="font-size:0.8rem; color:var(--text-muted, #888);">claude-opus-4-20250514</span>
                         </div>
                     </div>
                 </div>
@@ -196,7 +195,7 @@
                 <!-- Loading State -->
                 <div class="dg-loading" id="dg-loading" style="display:none">
                     <div class="dg-spinner"></div>
-                    <div class="dg-loading-text" id="dg-loading-text">Generating deck via Local AI...</div>
+                    <div class="dg-loading-text" id="dg-loading-text">Generating deck via Claude Opus 4...</div>
                 </div>
                 <div class="dg-progress-wrap" id="dg-progress-wrap" style="display:none">
                     <div class="dg-progress-bar">
@@ -208,8 +207,23 @@
                     </div>
                 </div>
 
-                <!-- Results placeholder — rest generated dynamically by deckgenerator.js -->
-                <div class="dg-results" id="dg-results" style="display:none"></div>
+                <!-- Results -->
+                <div class="dg-results" id="dg-results" style="display:none">
+                    <div class="dg-results-header">
+                        <div id="dg-strategy-bar"></div>
+                        <div id="dg-stats-bar" class="dg-stats-bar"></div>
+                        <div id="dg-sub-summary" style="display:none"></div>
+                        <div class="dg-result-actions">
+                            <button class="dg-btn dg-btn-secondary" id="dg-regenerate-btn">&#8635; Regenerate</button>
+                            <button class="dg-btn dg-btn-primary" id="dg-save-btn">&#128190; Save to Deck Builder</button>
+                            <button class="dg-btn dg-btn-ghost" id="dg-export-csv">CSV</button>
+                            <button class="dg-btn dg-btn-ghost" id="dg-export-dck">Forge .dck</button>
+                            <button class="dg-btn dg-btn-ghost" id="dg-export-moxfield">Moxfield</button>
+                            <button class="dg-btn dg-btn-ghost" id="dg-export-shopping">&#128722; Shopping</button>
+                        </div>
+                    </div>
+                    <div id="dg-card-groups" class="dg-card-groups"></div>
+                </div>
             </section>
 
         </main>

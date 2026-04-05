@@ -159,7 +159,7 @@ const DeckGenerator = (() => {
             if (!state.v3Ready) {
                 // Warn but do not block — local/Ollama mode may still work
                 console.warn('V3 status: not initialized. Error:', data.error || 'unknown');
-                toast('V3 generator not ready — check that the local AI model (gpt-oss:20b) is running via Ollama', 'warning');
+                toast('V3 generator not ready — check that the Anthropic API key is configured', 'warning');
             }
         } catch (e) {
             console.warn('V3 status check failed:', e);
@@ -386,7 +386,7 @@ const DeckGenerator = (() => {
     // ── Generate Deck ───────────────────────────────────────
     async function generateDeck() {
         clearLog();
-        logMessage('Connecting to local AI model (gpt-oss:20b)...', 'info');
+        logMessage('Connecting to Claude AI...', 'info');
         if (!state.commander) { toast('Select a commander first', 'error'); return; }
         // Non-blocking warning only — local Ollama mode does not require v3Ready
         if (!state.v3Ready) {
@@ -435,7 +435,7 @@ const DeckGenerator = (() => {
         state.isLoading = loading;
         $('dg-empty-state').style.display = 'none';
         $('dg-loading').style.display = loading ? 'flex' : 'none';
-        $('dg-results').style.display = loading ? 'none' : 'none';
+        $('dg-results').style.display = loading ? 'none' : 'block';
         $('dg-preview-btn').disabled = loading || !state.commander;
         if (text) $('dg-loading-text').textContent = text;
     }
@@ -454,6 +454,7 @@ const DeckGenerator = (() => {
 
     function renderStrategyBar(result) {
         const bar = $('dg-strategy-bar');
+        if (!bar) return;
         const bracket = result.bracket || {};
         const archetype = result.archetype || '';
         const strategy = result.strategy_summary || '';
@@ -472,6 +473,7 @@ const DeckGenerator = (() => {
     function renderStatsBar(result) {
         const stats = result.stats || {};
         const container = $('dg-stats-bar');
+        if (!container) return;
 
         const chips = [
             chipHtml('Total', stats.total_cards || 0, ''),
@@ -507,6 +509,7 @@ const DeckGenerator = (() => {
 
     function renderCardGroups(result) {
         const container = $('dg-card-groups');
+        if (!container) return;
         const cards = result.cards || [];
         const commander = result.commander;
 

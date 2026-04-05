@@ -259,7 +259,14 @@ async def list_decks():
     try:
         conn = _get_db_conn()
         rows = conn.execute(
-            "SELECT id, name, commander_name FROM decks ORDER BY id DESC"
+            """
+            SELECT d.id, d.name, d.commander_name,
+                   COALESCE(SUM(dc.quantity), 0) AS total_cards
+            FROM decks d
+            LEFT JOIN deck_cards dc ON dc.deck_id = d.id
+            GROUP BY d.id
+            ORDER BY d.id DESC
+            """
         ).fetchall()
         for row in rows:
             db_name = row["name"]
@@ -270,6 +277,7 @@ async def list_decks():
                     "source": "deckbuilder",
                     "deck_id": row["id"],
                     "commander": row["commander_name"] or "",
+                    "totalCards": row["total_cards"],
                 })
                 seen_names.add(db_name.lower())
     except Exception as e:

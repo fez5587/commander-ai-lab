@@ -12556,32 +12556,6 @@ function renderDeckSelectionGrid() {
         '<div style="color:var(--color-text-secondary);font-size:var(--text-sm);">AI Deck (auto-generated)</div>';
     } else {
       var idx = i;
-      // Build saved decks options
-      var savedDecks = (typeof getDecks === 'function') ? getDecks() : [];
-      var savedDecksHtml = '';
-      if (savedDecks.length === 0) {
-        savedDecksHtml = '<div style="color:var(--color-text-faint);font-size:var(--text-sm);padding:var(--space-3);">No saved decks. Build one in Deck Builder first.</div>';
-      } else {
-        savedDecksHtml = '<div class="setup-custom-deck-list" id="setup-custom-deck-list-' + idx + '">';
-        for (var di = 0; di < savedDecks.length; di++) {
-          var sd = savedDecks[di];
-          var cardCount = 0;
-          if (sd.cards) sd.cards.forEach(function(c) { cardCount += (c.quantity || 1); });
-          if (sd.commander) cardCount++;
-          var deckColors = '';
-          if (sd.commander && sd.commander.colorIdentity && sd.commander.colorIdentity.length) {
-            var manaSymbols = { W: '\u2600', U: '\uD83D\uDCA7', B: '\uD83D\uDC80', R: '\uD83D\uDD25', G: '\uD83C\uDF33' };
-            sd.commander.colorIdentity.forEach(function(c) { deckColors += (manaSymbols[c] || c) + ' '; });
-          }
-          savedDecksHtml += '<button class="setup-custom-deck-btn" id="setup-custom-deck-btn-' + idx + '-' + di + '"' +
-            ' onclick="selectSetupCustomDeck(' + idx + ',\'' + sd.id.replace(/'/g, "\\'") + '\')">' +
-            '<span class="setup-custom-deck-name">' + (sd.name || 'Untitled').replace(/</g, '&lt;') + '</span>' +
-            '<span class="setup-custom-deck-meta">' + deckColors + cardCount + ' cards</span>' +
-          '</button>';
-        }
-        savedDecksHtml += '</div>';
-      }
-
       panel.innerHTML =
         '<div class="deck-select-panel-header">' +
           '<div class="player-color-dot" style="background:' + color + '"></div>' +
@@ -12591,7 +12565,6 @@ function renderDeckSelectionGrid() {
         '<div class="deck-select-tabs">' +
           '<button class="deck-select-tab active" id="setup-deck-tab-precon-' + idx + '" onclick="switchSetupDeckTab(' + idx + ',\'precon\')">Precon</button>' +
           '<button class="deck-select-tab" id="setup-deck-tab-mydecks-' + idx + '" onclick="switchSetupDeckTab(' + idx + ',\'mydecks\')">My Decks</button>' +
-          '<button class="deck-select-tab" id="setup-deck-tab-import-' + idx + '" onclick="switchSetupDeckTab(' + idx + ',\'import\')">Import</button>' +
         '</div>' +
         '<div class="deck-select-tab-content active" id="setup-deck-content-precon-' + idx + '">' +
           '<select class="deck-select-precon-select" id="setup-deck-precon-select-' + idx + '" onchange="selectSetupPrecon(' + idx + ')">' +
@@ -12599,20 +12572,95 @@ function renderDeckSelectionGrid() {
           '</select>' +
         '</div>' +
         '<div class="deck-select-tab-content" id="setup-deck-content-mydecks-' + idx + '">' +
-          savedDecksHtml +
-        '</div>' +
-        '<div class="deck-select-tab-content" id="setup-deck-content-import-' + idx + '">' +
-          '<textarea class="deck-select-import-text" id="setup-deck-import-text-' + idx + '" placeholder="Paste deck list here...&#10;&#10;// Commander&#10;1 Atraxa, Praetors\' Voice&#10;&#10;// Deck&#10;1 Sol Ring&#10;..."></textarea>' +
-          '<button class="deck-select-import-btn" onclick="importSetupDeck(' + idx + ')">\uD83D\uDCE5 Validate &amp; Use This List</button>' +
+          '<div class="setup-custom-deck-list" id="setup-custom-deck-list-' + idx + '">' +
+            '<div style="color:var(--color-text-faint);font-size:var(--text-sm);padding:var(--space-3);">Loading user decks...</div>' +
+          '</div>' +
         '</div>';
     }
 
     grid.appendChild(panel);
   }
+
+  // Fetch user-created decks from the API and populate My Decks tabs
+  _loadUserDecksForSetup();
+}
+
+function _loadUserDecksForSetup() {
+  var apiBase = (typeof LAB_API_BASE !== 'undefined' && LAB_API_BASE) ? LAB_API_BASE : '';
+  fetch(apiBase + '/api/lab/decks')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var decks = (data.decks || []).filter(function(d) { return d.source === 'deckbuilder'; });
+      for (var i = 0; i < setupPlayerCount; i++) {
+        if (setupAiPlayers.has(i)) continue;
+        var listEl = document.getElementById('setup-custom-deck-list-' + i);
+        if (!listEl) continue;
+
+        if (decks.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--color-text-faint);font-size:var(--text-sm);padding:var(--space-3);">No saved decks. Build one in Deck Builder first.</div>';
+          continue;
+        }
+
+        var html = '';
+        for (var di = 0; di < decks.length; di++) {
+          var d = decks[di];
+          var cardCount = d.card_count || d.total_cards || 0;
+          var cmdr = d.commander || '';
+          html += '<button class="setup-custom-deck-btn" id="setup-custom-deck-btn-' + i + '-' + di + '"' +
+            ' onclick="selectSetupUserDeck(' + i + ',' + d.deck_id + ',\'' + (d.name || 'Untitled').replace(/'/g, "\\'") + '\')">' +
+            '<span class="setup-custom-deck-name">' + (d.name || 'Untitled').replace(/</g, '&lt;') + '</span>' +
+            '<span class="setup-custom-deck-meta">' + (cmdr ? cmdr + ' \u2014 ' : '') + cardCount + ' cards</span>' +
+          '</button>';
+        }
+        listEl.innerHTML = html;
+      }
+    })
+    .catch(function(e) {
+      console.warn('[Setup] Could not load user decks:', e);
+      for (var i = 0; i < setupPlayerCount; i++) {
+        if (setupAiPlayers.has(i)) continue;
+        var listEl = document.getElementById('setup-custom-deck-list-' + i);
+        if (listEl) listEl.innerHTML = '<div style="color:var(--color-text-faint);font-size:var(--text-sm);padding:var(--space-3);">Could not load decks. Is the server running?</div>';
+      }
+    });
+}
+
+function selectSetupUserDeck(playerIdx, deckId, deckName) {
+  var statusEl = document.getElementById('setup-deck-status-' + playerIdx);
+
+  // Highlight selected button
+  var listEl = document.getElementById('setup-custom-deck-list-' + playerIdx);
+  if (listEl) {
+    listEl.querySelectorAll('.setup-custom-deck-btn').forEach(function(b) { b.classList.remove('selected'); });
+  }
+  // Find clicked button and highlight it
+  var allBtns = listEl ? listEl.querySelectorAll('.setup-custom-deck-btn') : [];
+  allBtns.forEach(function(b) {
+    if (b.textContent.indexOf(deckName) !== -1) b.classList.add('selected');
+  });
+
+  // Export the deck to a .dck file, then store it as a precon-style choice
+  var apiBase = (typeof LAB_API_BASE !== 'undefined' && LAB_API_BASE) ? LAB_API_BASE : '';
+  if (statusEl) { statusEl.textContent = 'Exporting...'; statusEl.className = 'deck-select-status'; }
+
+  fetch(apiBase + '/api/decks/' + deckId + '/export-to-sim', { method: 'POST' })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+      if (result.success) {
+        setupDeckChoices[playerIdx] = { type: 'user-deck', deckName: result.deckName, fileName: result.deckName + '.dck' };
+        if (statusEl) { statusEl.textContent = deckName + ' (' + (result.totalCards || '?') + ' cards)'; statusEl.className = 'deck-select-status loaded'; }
+      } else {
+        if (statusEl) { statusEl.textContent = 'Export failed'; statusEl.className = 'deck-select-status'; }
+      }
+    })
+    .catch(function(e) {
+      console.error('[Setup] Export failed:', e);
+      if (statusEl) { statusEl.textContent = 'Export error'; statusEl.className = 'deck-select-status'; }
+    });
 }
 
 function switchSetupDeckTab(playerIdx, tab) {
-  var tabs = ['precon', 'mydecks', 'import'];
+  var tabs = ['precon', 'mydecks'];
   tabs.forEach(function(t) {
     var tabBtn = document.getElementById('setup-deck-tab-' + t + '-' + playerIdx);
     var content = document.getElementById('setup-deck-content-' + t + '-' + playerIdx);
@@ -12641,51 +12689,6 @@ function selectSetupPrecon(playerIdx) {
   if (statusEl) { statusEl.textContent = 'Precon: ' + preconName; statusEl.className = 'deck-select-status loaded'; }
 }
 
-function importSetupDeck(playerIdx) {
-  var textarea = document.getElementById('setup-deck-import-text-' + playerIdx);
-  var statusEl = document.getElementById('setup-deck-status-' + playerIdx);
-  if (!textarea) return;
-  var text = textarea.value.trim();
-  if (!text) {
-    if (statusEl) { statusEl.textContent = 'Paste a deck list first.'; statusEl.className = 'deck-select-status'; }
-    return;
-  }
-  var parsed = parseDeckList(text);
-  if (!parsed.length) {
-    if (statusEl) { statusEl.textContent = 'Could not parse cards from list.'; statusEl.className = 'deck-select-status'; }
-    return;
-  }
-  var total = parsed.reduce(function(sum, e) { return sum + e.qty; }, 0);
-  setupDeckChoices[playerIdx] = { type: 'import', text: text };
-  if (statusEl) { statusEl.textContent = 'Deck ready (' + total + ' cards)'; statusEl.className = 'deck-select-status loaded'; }
-}
-
-function selectSetupCustomDeck(playerIdx, deckId) {
-  var decks = (typeof getDecks === 'function') ? getDecks() : [];
-  var deck = decks.find(function(d) { return d.id === deckId; });
-  if (!deck) return;
-  var statusEl = document.getElementById('setup-deck-status-' + playerIdx);
-
-  // Highlight selected button, unhighlight others
-  var listEl = document.getElementById('setup-custom-deck-list-' + playerIdx);
-  if (listEl) {
-    listEl.querySelectorAll('.setup-custom-deck-btn').forEach(function(b) { b.classList.remove('selected'); });
-  }
-  var btns = document.querySelectorAll('[id^="setup-custom-deck-btn-' + playerIdx + '-"]');
-  btns.forEach(function(b) { b.classList.remove('selected'); });
-  // Find the right button by matching deckId in onclick
-  btns.forEach(function(b) {
-    if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf(deckId) !== -1) {
-      b.classList.add('selected');
-    }
-  });
-
-  setupDeckChoices[playerIdx] = { type: 'custom', deckId: deckId };
-  var cardCount = 0;
-  if (deck.cards) deck.cards.forEach(function(c) { cardCount += (c.quantity || 1); });
-  if (deck.commander) cardCount++;
-  if (statusEl) { statusEl.textContent = deck.name + ' (' + cardCount + ' cards)'; statusEl.className = 'deck-select-status loaded'; }
-}
 
 async function loadCustomDeckForPlayer(playerIdx, deckId) {
   var decks = (typeof getDecks === 'function') ? getDecks() : [];
@@ -12800,6 +12803,28 @@ async function loadPreconForPlayer(playerIdx, preconId) {
   addLogEntry('\uD83D\uDCCB <strong>' + player.name + '</strong> loaded precon "' + precon.name + '" (' + (libraryCards.length + commandCards.length) + ' cards)');
 }
 
+async function loadUserDeckForPlayer(playerIdx, deckName) {
+  var player = gameState.players[playerIdx];
+  if (!player || !deckName) return;
+
+  // Fetch the .dck file content from user-decks/ via static mount or API
+  var apiBase = (typeof LAB_API_BASE !== 'undefined' && LAB_API_BASE) ? LAB_API_BASE : '';
+  var deckText = '';
+  try {
+    var resp = await fetch(apiBase + '/user-decks/' + encodeURIComponent(deckName) + '.dck');
+    if (resp.ok) deckText = await resp.text();
+  } catch (e) {
+    console.warn('[loadUserDeckForPlayer] Could not fetch .dck file:', e);
+  }
+  if (!deckText) {
+    addLogEntry('\u26A0 Could not load user deck "' + deckName + '"');
+    return;
+  }
+
+  await importDeckForPlayer(playerIdx, deckText);
+  player.deckFileName = deckName + '.dck';
+}
+
 async function importDeckForPlayer(playerIdx, deckText) {
   var player = gameState.players[playerIdx];
   if (!player || !deckText.trim()) return;
@@ -12899,8 +12924,8 @@ async function startGameWithDecks() {
         await loadPreconForPlayer(hd.idx, hd.choice.preconId);
       } else if (hd.choice.type === 'custom') {
         await loadCustomDeckForPlayer(hd.idx, hd.choice.deckId);
-      } else if (hd.choice.type === 'import') {
-        await importDeckForPlayer(hd.idx, hd.choice.text);
+      } else if (hd.choice.type === 'user-deck') {
+        await loadUserDeckForPlayer(hd.idx, hd.choice.deckName);
       }
     }
   } catch (err) {

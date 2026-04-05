@@ -87,8 +87,8 @@ def cli() -> None:
     )
     parser.add_argument(
         "--model",
-        default="gpt-oss:20b",
-        help="Ollama model name (default: gpt-oss:20b)",
+        default="claude-opus-4-20250514",
+        help="AI model name (default: claude-opus-4-20250514)",
     )
     parser.add_argument(
         "--output",

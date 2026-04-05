@@ -796,10 +796,12 @@ async def export_deck_to_sim(deck_id: int):
     if not safe_name:
         safe_name = f"deck_{deck_id}"
 
-    save_dir = CFG.forge_decks_dir
-    if not save_dir or not os.path.isdir(save_dir):
-        save_dir = os.path.join(os.path.dirname(__file__), "exported-decks")
-        os.makedirs(save_dir, exist_ok=True)
+    save_dir = (
+        CFG.user_decks_dir
+        or CFG.forge_decks_dir
+        or os.path.join(os.path.dirname(__file__), "..", "user-decks")
+    )
+    os.makedirs(save_dir, exist_ok=True)
 
     out_path = Path(save_dir) / f"{safe_name}.dck"
     out_path.write_text(content, encoding="utf-8")

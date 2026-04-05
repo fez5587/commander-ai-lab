@@ -1,5 +1,5 @@
 """
-Ollama gpt-oss:20b client for the Commander AI Deck Builder.
+Ollama client for the Commander AI Deck Builder.
 
 Uses the OpenAI-compatible API exposed by Ollama at localhost:11434.
 Provides 6 core functions:

@@ -449,7 +449,7 @@ def _get_deepseek_brain():
                     from commander_ai_lab.sim.deepseek_brain import DeepSeekBrain, DeepSeekConfig
                     cfg = DeepSeekConfig(
                         api_base=os.environ.get("BRAIN_API_BASE", "http://localhost:11434"),
-                        model=os.environ.get("BRAIN_MODEL", "gpt-oss:20b"),
+                        model=os.environ.get("BRAIN_MODEL", "qwen2.5:7b"),
                         temperature=float(os.environ.get("BRAIN_TEMPERATURE", "0.3")),
                         max_tokens=int(os.environ.get("BRAIN_MAX_TOKENS", "1024")),
                         request_timeout=float(os.environ.get("BRAIN_TIMEOUT", "300.0")),

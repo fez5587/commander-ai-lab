@@ -21,6 +21,7 @@ _BUILTIN_DECK_DIRS = [
     _REPO_ROOT / "precon-decks",
     _REPO_ROOT / "sample-decks",
     _REPO_ROOT / "imported-decks",
+    _REPO_ROOT / "user-decks",
 ]
 
 
@@ -352,7 +353,23 @@ def _load_deck_cards_by_name(deck_name: str) -> list:
             ) cr ON cr.name = dc.card_name
             WHERE dc.deck_id = ?
         """, (deck_id,)).fetchall()
-        return [_row_to_dict(r) for r in rows]
+        result = [_row_to_dict(r) for r in rows]
+
+        # Enrich cards missing type_line from Forge card cache
+        try:
+            from commander_ai_lab.sim.forge_card_loader import lookup_forge_card
+            for card in result:
+                if not card.get("type_line"):
+                    forge = lookup_forge_card(card.get("card_name", ""))
+                    if forge:
+                        card["type_line"]   = forge.type_line
+                        card["oracle_text"] = forge.oracle_text
+                        card["cmc"]         = forge.cmc
+                        card["mana_cost"]   = forge.mana_cost
+        except ImportError:
+            pass  # Forge card loader not available
+
+        return result
 
     # -- 2. .dck file fallback --
     dck_path = _find_dck_file(deck_name)

@@ -35,6 +35,7 @@ class Config:
     forge_jar: str = ""
     forge_dir: str = ""
     forge_decks_dir: str = ""
+    user_decks_dir: str = ""
     lab_jar: str = ""
     precon_dir: str = ""
     results_dir: str = "results"
@@ -57,6 +58,10 @@ CFG.lab_jar           = os.environ.get("LAB_JAR", "")
 # PRECON_DIR / PRECON_DECKS_DIR are aliases -- prefer PRECON_DIR
 CFG.precon_dir        = os.environ.get("PRECON_DIR") or os.environ.get("PRECON_DECKS_DIR", "")
 CFG.forge_decks_dir   = os.environ.get("FORGE_DECKS_DIR", "")
+CFG.user_decks_dir    = os.environ.get(
+    "USER_DECKS_DIR",
+    os.path.join(os.path.dirname(__file__), "..", "user-decks")
+)
 
 
 def validate_forge_config() -> None:

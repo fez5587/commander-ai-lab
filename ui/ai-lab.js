@@ -93,24 +93,24 @@ const AiLab = (() => {
             </div>
             <p class="lab-subtitle">Headless 3-AI batch simulation — stress-test your decks at scale</p>
 
-            <!-- v3: Import Bar -->
-            <div class="lab-import-bar">
-                <div class="lab-import-bar-label">Import Deck</div>
+            <!-- v3: Import Bar (collapsed by default) -->
+            <details class="lab-import-bar">
+                <summary class="lab-import-bar-label" style="cursor:pointer;">\u2B07 Advanced Import (URL / Text / Precon)</summary>
                 <div class="lab-import-actions">
                     <button class="lab-import-action-btn" onclick="AiLab.showUrlImport()" title="Import from Archidekt or EDHREC URL">
-                        <span class="import-icon">🔗</span> URL Import
+                        <span class="import-icon">\uD83D\uDD17</span> URL Import
                     </button>
                     <button class="lab-import-action-btn" onclick="AiLab.showMetaPicker()" title="Browse EDHREC average decks for popular commanders">
-                        <span class="import-icon">📊</span> Commander Meta
+                        <span class="import-icon">\uD83D\uDCCA</span> Commander Meta
                     </button>
                     <button class="lab-import-action-btn" onclick="AiLab.showTextImport()" title="Paste a card list directly">
-                        <span class="import-icon">📋</span> Text Import
+                        <span class="import-icon">\uD83D\uDCCB</span> Text Import
                     </button>
                     <button class="lab-import-action-btn lab-precon-btn" onclick="AiLab.showPreconPicker()" title="Browse and load official Commander precon decks">
-                        <span class="import-icon">🎴</span> Precon Decks
+                        <span class="import-icon">\uD83C\uDCB4</span> Precon Decks
                     </button>
                 </div>
-            </div>
+            </details>
 
             <!-- v3: URL Import Panel (hidden by default) -->
             <div class="lab-url-import" id="lab-url-import">
@@ -403,7 +403,9 @@ const AiLab = (() => {
                     const data = await res.json();
                     decks = (data.decks || []).map(d => ({
                         name: d.name,
-                        commander: d.commander || d.name.replace(/_/g, ' '),
+                        commander: d.commander || d.commander_name || d.name.replace(/_/g, ' '),
+                        source: d.source || 'forge',
+                        deck_id: d.deck_id || null,
                     }));
                 }
             } catch (err) {
@@ -427,9 +429,10 @@ const AiLab = (() => {
             const prev = select.value;
             select.innerHTML = '<option value="">— Select Deck —</option>';
 
-            // Group: imported decks first
-            const imported = availableDecks.filter(d => importedDeckMeta[d.name]);
-            const local = availableDecks.filter(d => !importedDeckMeta[d.name]);
+            // Split into three groups
+            const imported  = availableDecks.filter(d => importedDeckMeta[d.name]);
+            const myDecks   = availableDecks.filter(d => d.source === 'deckbuilder' && !importedDeckMeta[d.name]);
+            const forgeDecks = availableDecks.filter(d => d.source !== 'deckbuilder' && !importedDeckMeta[d.name]);
 
             if (imported.length > 0) {
                 const group = document.createElement('optgroup');
@@ -446,10 +449,23 @@ const AiLab = (() => {
                 select.appendChild(group);
             }
 
-            if (local.length > 0) {
+            if (myDecks.length > 0) {
+                const group = document.createElement('optgroup');
+                group.label = '\uD83D\uDDC2 My Decks (Deck Builder)';
+                myDecks.forEach(deck => {
+                    const opt = document.createElement('option');
+                    opt.value = deck.name;
+                    opt.textContent = deck.name + (deck.commander ? ` \u2014 ${deck.commander}` : '');
+                    opt.dataset.commander = deck.commander || '';
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            }
+
+            if (forgeDecks.length > 0) {
                 const group = document.createElement('optgroup');
                 group.label = 'Local Decks';
-                local.forEach(deck => {
+                forgeDecks.forEach(deck => {
                     const opt = document.createElement('option');
                     opt.value = deck.name;
                     opt.textContent = deck.name;

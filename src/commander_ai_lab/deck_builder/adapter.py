@@ -26,7 +26,7 @@ class DeckBuilderAdapter:
     def __init__(
         self,
         db_conn_factory: Callable[[], sqlite3.Connection] = None,
-        model: str = "gpt-oss:20b",
+        model: str = "claude-opus-4-20250514",
     ):
         self.db_conn_factory = db_conn_factory
         self.model = model

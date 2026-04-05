@@ -13,7 +13,7 @@ LAB_ROOT = Path(os.environ.get("COMMANDER_LAB_ROOT", Path(__file__).parent.paren
 
 # ── Ollama (OpenAI-compatible API) ────────────────────────────
 LLM_URL = os.environ.get("LLM_URL", "http://localhost:11434/v1")
-LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-oss:20b")
+LLM_MODEL = os.environ.get("LLM_MODEL", "claude-opus-4-20250514")
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "360"))  # seconds
 LLM_MAX_RETRIES = 3
 

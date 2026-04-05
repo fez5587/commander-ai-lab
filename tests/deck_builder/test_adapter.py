@@ -32,7 +32,7 @@ def _fake_build_result():
 class TestDeckBuilderAdapter:
     def test_init_defaults(self):
         adapter = DeckBuilderAdapter()
-        assert adapter.model == "gpt-oss:20b"
+        assert adapter.model == "claude-opus-4-20250514"
         assert adapter.db_conn_factory is None
 
     @patch("src.commander_ai_lab.deck_builder.adapter.build_deck")
@@ -45,7 +45,7 @@ class TestDeckBuilderAdapter:
         assert result["commander"]["name"] == "Atraxa"
         assert "cards" in result
         assert "stats" in result
-        assert result["model"] == "gpt-oss:20b"
+        assert result["model"] == "claude-opus-4-20250514"
         assert result["build_time_seconds"] == 1.23
         assert "scryfall" in result["reasoning"]["sources"]
 

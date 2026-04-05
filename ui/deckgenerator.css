@@ -1267,7 +1267,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: var(--sp-3);
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 0.8rem;
     scrollbar-width: thin;
 }

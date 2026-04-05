@@ -810,7 +810,7 @@
 }
 
 .coll-td-price {
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
     text-align: right;
     white-space: nowrap;
 }
@@ -840,7 +840,7 @@
 .coll-td-pt {
     text-align: center;
     white-space: nowrap;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
 }
 
@@ -861,7 +861,7 @@
 
 .coll-td-edhrec {
     text-align: right;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-secondary);
 }
@@ -1872,7 +1872,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 12px;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.5;
     resize: vertical;
@@ -1953,7 +1953,7 @@
     color: var(--text);
     overflow-x: auto;
     white-space: pre;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
     margin: 0;
 }
 
@@ -1989,7 +1989,7 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--text);
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-family: var(--font-mono);
 }
 
 .coll-mapping-select {

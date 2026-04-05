@@ -1739,7 +1739,7 @@ const AiLab = (() => {
 
         // Y-axis labels (0-100%)
         ctx.fillStyle = '#8b90a0';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.font = '11px Barlow, sans-serif';
         ctx.textAlign = 'right';
         for (let pct = 0; pct <= 100; pct += 25) {
             const y = canvas.height - padding.bottom - (pct / 100) * h;
@@ -1785,7 +1785,7 @@ const AiLab = (() => {
             const ly = canvas.height - padding.bottom - (lastPt.winRate / 100) * h;
             ctx.fillStyle = colors[di % colors.length];
             ctx.textAlign = 'left';
-            ctx.font = '11px Inter, sans-serif';
+            ctx.font = '11px Barlow, sans-serif';
             ctx.fillText(data.deckName, lx + 6, ly + 4);
         });
     }

@@ -362,7 +362,7 @@ function renderWinRateChart(generations) {
         // Y axis labels
         const val = maxY - (maxY - minY) * (i / ySteps);
         ctx.fillStyle = '#8b90a0';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.font = '11px Barlow, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(val.toFixed(0) + '%', pad.left - 8, y + 4);
     }
@@ -437,7 +437,7 @@ function renderWinRateChart(generations) {
     }
 
     // Legend
-    ctx.font = '11px Inter, sans-serif';
+    ctx.font = '11px Barlow, sans-serif';
     const legendX = pad.left + 10;
     const legendY = pad.top + 15;
 
@@ -505,7 +505,7 @@ function renderCompositionChart(generations) {
 
         const val = maxDataset - (maxDataset * i / ySteps);
         ctx.fillStyle = '#8b90a0';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.font = '11px Barlow, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(formatNumber(val), pad.left - 8, y + 4);
     }
@@ -535,13 +535,13 @@ function renderCompositionChart(generations) {
 
         // X label
         ctx.fillStyle = '#8b90a0';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.font = '11px Barlow, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('G' + g.generation, x + barWidth / 2, h - 8);
     }
 
     // Legend
-    ctx.font = '11px Inter, sans-serif';
+    ctx.font = '11px Barlow, sans-serif';
     const legendX = pad.left + 10;
     const legendY = pad.top + 12;
 
@@ -807,7 +807,7 @@ function renderEloChart(entries) {
 
         const val = maxElo - (eloRange * i / ySteps);
         ctx.fillStyle = '#8b90a0';
-        ctx.font = '11px Inter, sans-serif';
+        ctx.font = '11px Barlow, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(Math.round(val).toString(), pad.left - 8, y + 4);
     }
@@ -861,7 +861,7 @@ function renderEloChart(entries) {
     });
 
     // Legend
-    ctx.font = '11px Inter, sans-serif';
+    ctx.font = '11px Barlow, sans-serif';
     let legendX = pad.left + 10;
     const legendY = pad.top + 12;
     modelNames.forEach(name => {

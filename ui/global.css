@@ -61,7 +61,8 @@
     --duration:      180ms;
 
     /* Typography */
-    --font:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font:          'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display:  'Barlow Condensed', 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono:     'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
     /* Spacing scale */
@@ -94,13 +95,15 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     color: #fff;
-    font-weight: 600;
-    line-height: 1.25;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
 }
 
-h1 { font-size: 24px; }
-h2 { font-size: 18px; }
+h1 { font-size: 26px; }
+h2 { font-size: 19px; }
 h3 { font-size: 16px; }
 
 a { color: var(--accent); text-decoration: none; transition: color var(--duration) var(--ease); }
@@ -147,10 +150,12 @@ table { border-collapse: collapse; width: 100%; }
     display: flex;
     align-items: center;
     gap: var(--sp-3);
-    font-size: 15px;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
     color: #fff;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
     margin-right: var(--sp-8);
@@ -177,8 +182,11 @@ table { border-collapse: collapse; width: 100%; }
     align-items: center;
     gap: var(--sp-2);
     padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     color: var(--text-secondary);
     border-radius: var(--radius-sm);
     white-space: nowrap;
@@ -219,9 +227,11 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .page-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
     margin-bottom: var(--sp-2);
 }
 
@@ -252,13 +262,17 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .panel-header h2 {
-    font-size: 16px;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
 }
 
 .panel-header .badge {
+    font-family: var(--font-display);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 3px 10px;
     border-radius: var(--radius-sm);
     text-transform: uppercase;
@@ -288,8 +302,9 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .stat-label {
+    font-family: var(--font-display);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -297,8 +312,9 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .stat-value {
-    font-size: 28px;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
     color: #fff;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
@@ -317,8 +333,11 @@ table { border-collapse: collapse; width: 100%; }
     justify-content: center;
     gap: var(--sp-2);
     padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     border-radius: var(--radius-sm);
     border: none;
     cursor: pointer;
@@ -392,6 +411,7 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .form-label {
+    font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary);
@@ -510,8 +530,9 @@ table { border-collapse: collapse; width: 100%; }
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-display);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 3px 10px;
     border-radius: var(--radius-sm);
     text-transform: uppercase;
@@ -579,8 +600,9 @@ table { border-collapse: collapse; width: 100%; }
 .data-table thead th {
     text-align: left;
     padding: var(--sp-3) var(--sp-4);
+    font-family: var(--font-display);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -607,8 +629,11 @@ table { border-collapse: collapse; width: 100%; }
     display: inline-flex;
     align-items: center;
     padding: 2px 8px;
+    font-family: var(--font-display);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     border-radius: var(--radius-sm);
     white-space: nowrap;
 }

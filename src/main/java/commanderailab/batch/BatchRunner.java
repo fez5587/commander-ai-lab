@@ -466,7 +466,7 @@ public class BatchRunner {
                 forgeName = forgeName.replace('_', ' ');
             }
             cmd.add(forgeName);
-            System.out.println("[DECK] Resolved: " + resolvedPath + " \u2192 Forge name: \\"" + forgeName + "\\"");
+            System.out.println("[DECK] Resolved: " + resolvedPath + " -> Forge name: '" + forgeName + "'");
         }
 
         cmd.add("-f");

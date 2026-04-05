@@ -845,7 +845,11 @@ public class BatchRunner {
             }
         }
 
-        if (mlLoggingEnabled && !quiet && mlDecisionLogger != null) {
+        // ML decision logging: extract state+action snapshots from the
+        // verbose Forge game log for the training pipeline.
+        // Note: the !quiet guard was removed — ML logging now works in all
+        // modes.  DecisionExtractor parses the same log lines regardless.
+        if (mlLoggingEnabled && mlDecisionLogger != null) {
             try {
                 String gid = "game-" + gameIndex + "-" + gameSeed;
                 String[] cmdNames = new String[numPlayers];

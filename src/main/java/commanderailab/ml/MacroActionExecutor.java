@@ -268,6 +268,43 @@ public class MacroActionExecutor {
     }
 
     /**
+     * Public card-role check: returns {@code true} if {@code cardName} is
+     * in the known removal-card database.
+     *
+     * <p>Used by {@code PolicyControllerAi} to map macro-actions back to
+     * concrete {@link forge.game.spellability.SpellAbility} objects without
+     * duplicating the database here.</p>
+     *
+     * @param cardName the exact English card name
+     * @return {@code true} if this card is classified as removal
+     */
+    public static boolean isRemovalCard(String cardName) {
+        return REMOVAL_CARDS.contains(cardName);
+    }
+
+    /**
+     * Public card-role check: returns {@code true} if {@code cardName} is
+     * in the known draw-spell database.
+     *
+     * @param cardName the exact English card name
+     * @return {@code true} if this card is classified as a draw spell
+     */
+    public static boolean isDrawCard(String cardName) {
+        return DRAW_CARDS.contains(cardName);
+    }
+
+    /**
+     * Public card-role check: returns {@code true} if {@code cardName} is
+     * in the known ramp-spell database.
+     *
+     * @param cardName the exact English card name
+     * @return {@code true} if this card is classified as ramp
+     */
+    public static boolean isRampCard(String cardName) {
+        return RAMP_CARDS.contains(cardName);
+    }
+
+    /**
      * Get the macro-action name from an index (matching Python IDX_TO_ACTION).
      */
     public static String actionNameFromIndex(int index) {

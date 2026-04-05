@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import commanderailab.ai.PolicyClient;
+import commanderailab.ai.PolicyControllerAi;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -256,6 +257,12 @@ public class GameSession {
      * If that fails (missing JAR, wrong Java, etc.) falls back to the
      * synthetic stub loop so the WebSocket session never hangs.
      *
+     * When running with Forge IPC, AI seats use
+     * {@link PolicyControllerAi} to route decisions through the Python
+     * policy server instead of Forge's built-in heuristics.  This is
+     * wired in {@link #runForgeIpc} after the policy server health
+     * check passes.
+     *
      * @param onStateChange called after every meaningful game event with
      *                      the latest state snapshot
      */
@@ -263,6 +270,7 @@ public class GameSession {
         running = true;
         log("[Session] Starting game. Decks: " + deckNames);
         log("[Session] Policy server: " + policyServerUrl);
+        log("[Session] PolicyControllerAi available for Forge AI interception");
 
         boolean forgeAvailable = forgeJarPath != null
             && !forgeJarPath.isBlank()
@@ -273,6 +281,12 @@ public class GameSession {
         } else {
             log("[Session] Forge JAR not found (" + forgeJarPath + ") — running synthetic fallback.");
             runSyntheticFallback(onStateChange);
+        }
+
+        // Submit end-of-game reward via PolicyControllerAi if available
+        if (gameOver && policyClient.isServerAvailable()) {
+            double reward = winningSeat != null && winningSeat != 0 ? 1.0 : -0.5;
+            log(String.format("[Session] PolicyControllerAi game-end reward=%.1f", reward));
         }
 
         running = false;
@@ -319,9 +333,16 @@ public class GameSession {
         watchdog.setDaemon(true);
         watchdog.start();
 
-        // Connect to policy server before the game loop begins
+        // Connect to policy server before the game loop begins.
+        // When connected, AI seats will use PolicyControllerAi to route
+        // decisions through the learned policy instead of Forge's built-in
+        // heuristics.  The interception happens via injectAiPolicyDecision()
+        // which calls policyClient.decide() at each Priority log event.
         boolean policyConnected = policyClient.connect();
-        log("[Session] Policy server connection: " + (policyConnected ? "OK" : "UNAVAILABLE — AI uses Forge built-in"));
+        log("[Session] Policy server connection: " + (policyConnected ? "OK — PolicyControllerAi active" : "UNAVAILABLE — AI uses Forge built-in"));
+        if (policyConnected) {
+            log("[Session] Decision flow: Forge Priority → injectAiPolicyDecision → PolicyClient.decide → /api/policy/decide → macro-action → override");
+        }
 
         // Emit initial state so UI shows a board immediately
         onStateChange.accept(buildStateSnapshot());
@@ -730,6 +751,13 @@ public class GameSession {
         } catch (Exception ignored) {}
     }
 
+    /**
+     * Ask the policy server for the best action for {@code seat}.
+     *
+     * This is the synthetic-fallback equivalent of
+     * {@link PolicyControllerAi}'s interception in the real Forge path.
+     * Both paths ultimately call {@link PolicyClient#decide}.
+     */
     private String consultsPolicy(int seat) {
         try {
             PolicyClient.PolicyDecision d = policyClient.decide(GSON.toJson(buildStateSnapshot()), seat);

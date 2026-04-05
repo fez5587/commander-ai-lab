@@ -1,6 +1,7 @@
 package commanderailab.batch;
 
 import commanderailab.ai.AiPolicy;
+import commanderailab.ai.PolicyControllerAi;
 import commanderailab.ml.DecisionExtractor;
 import commanderailab.ml.DecisionLogger;
 import commanderailab.schema.BatchResult;
@@ -75,6 +76,12 @@ public class BatchRunner {
     // ── Forge AI optimization flags (Issue #4) ────────────────
     private boolean useSimplifiedAi = false;   // Use faster AI profile for sims
     private int aiThinkTimeMs = -1;            // -1 = Forge default; >0 = cap AI think time
+
+    // ── Policy server integration (PolicyControllerAi) ────────
+    // When set, the Forge command includes --policyServer so that
+    // PolicyControllerAi (in-process) or the external policy server
+    // can intercept AI decisions during batch simulations.
+    private String policyServerUrl = null;
 
     // ── Regex patterns for parsing Forge sim output ────────────────────
 
@@ -184,6 +191,22 @@ public class BatchRunner {
     public void setAiOptimization(boolean simplified, int thinkTimeMs) {
         this.useSimplifiedAi = simplified;
         this.aiThinkTimeMs = thinkTimeMs;
+    }
+
+    /**
+     * Enable policy server integration for batch simulations.
+     *
+     * When set, the Forge subprocess command includes
+     * {@code --policy midrange --policyServer <url>} flags, and
+     * the log output notes that {@link PolicyControllerAi} is
+     * available for decision interception.
+     *
+     * @param url Base URL of the Python policy server
+     *            (e.g. {@code "http://localhost:8080"})
+     */
+    public void setPolicyServer(String url) {
+        this.policyServerUrl = url;
+        System.out.println("[BatchRunner] PolicyControllerAi integration enabled — server: " + url);
     }
 
     public void enableMlLogging(String resultsDir, String batchId) {
@@ -437,6 +460,19 @@ public class BatchRunner {
 
         cmd.add("-c");
         cmd.add(String.valueOf(clockSeconds));
+
+        // Policy server integration (PolicyControllerAi)
+        // When policyServerUrl is set, tell Forge to use policy-driven AI.
+        // The Python policy server at this URL handles POST /api/policy/decide
+        // and returns macro-actions that PolicyControllerAi maps to concrete
+        // SpellAbility objects.
+        if (policyServerUrl != null && !policyServerUrl.isBlank()) {
+            cmd.add("--policy");
+            cmd.add("midrange");
+            cmd.add("--policyServer");
+            cmd.add(policyServerUrl);
+            System.out.println("[BatchRunner] Policy server: " + policyServerUrl);
+        }
 
         if (quiet) {
             cmd.add("-q");

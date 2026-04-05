@@ -171,13 +171,13 @@ OCR pipeline for physical Magic cards using the Ximilar API. Scan cards from pho
 | Maven | 3.8+ |
 | Node.js | 18+ (for LAN client scripts) |
 | Ollama | Latest (for local LLM inference) |
-| [Forge](https://github.com/Card-Forge/forge) | Built at `D:\ForgeCommander\forge-repo` |
+| [Forge](https://github.com/KoalaTrapLord/Forge-Repo) | Built at `D:\ForgeCommander\Forge-Repo` |
 
 ### Setup (Windows)
 
 ```powershell
 # 1. Build Forge (one-time)
-cd D:\ForgeCommander\forge-repo
+cd D:\ForgeCommander\Forge-Repo
 mvn package -pl forge-gui-desktop "-DskipTests" "-Drevision=2.0.12-SNAPSHOT" -am
 
 # 2. Build Commander AI Lab

@@ -256,7 +256,9 @@ def _resolve_forge_dir() -> str:
     project_root = Path(__file__).parent
     for candidate in [
         project_root / "forge",
-        project_root.parent / "forge-repo",
+        project_root.parent / "Forge-Repo",
+        project_root.parent / "Forge-Repo" / "forge-gui",
+        project_root.parent / "forge-repo",           # legacy fallback
         project_root.parent / "forge-repo" / "forge-gui",
         project_root.parent / "forge",
         project_root / "forge-gui-desktop",
@@ -282,7 +284,8 @@ def _resolve_forge_jar() -> str:
     project_root = Path(__file__).parent
     candidates = [
         project_root / "forge-gui-desktop" / "target",
-        project_root.parent / "forge-repo" / "forge-gui-desktop" / "target",
+        project_root.parent / "Forge-Repo" / "forge-gui-desktop" / "target",
+        project_root.parent / "forge-repo" / "forge-gui-desktop" / "target",  # legacy fallback
         project_root.parent / "forge" / "forge-gui-desktop" / "target",
     ]
     forge_dir_env = os.environ.get("FORGE_DIR", "") or os.environ.get("FORGE_WORKING_DIR", "")

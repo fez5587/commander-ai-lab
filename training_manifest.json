@@ -1,0 +1,597 @@
+﻿[
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-01a993df.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-02ce51bc.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-050da93a.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-07325fb5.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-0791d58e.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-083a55e5.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-09f6ab6b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-0d39aa71.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-0dadbf18.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-12802330.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-186b4c2d.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-19f0c0c3.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-1a0a0840.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-1d001e22.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-1df7d6d8.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-220e4942.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-26f83797.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-291a225a.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-309b1008.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-31557831.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-37d57d02.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-391e4632.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-39ed0be8.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3bb88339.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3c98f83b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3de43fb6.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3e0639f7.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3ea0bfb2.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3f0dc5c4.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-3f2f9f04.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-425a6728.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-46517693.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-471701d5.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-4c709ff1.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-4f5be65a.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-501f6ef9.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-592d3d5a.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-644cc2f1.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-64759781.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-6575cbf7.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-682fa8d1.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-68352096.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-6c982613.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-6cdb4b9b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-6dee8fdf.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7018972e.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7088479f.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-74d0f773.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-76303df4.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-76c602e0.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-76edf7a3.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-77551df3.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-77ee4077.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-786ff020.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7d4ad84d.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7f74c9f3.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7fbdfb25.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-7fd1bee8.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-804d0dfe.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-805211db.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-812a5124.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-826a32fb.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-878d0278.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-8dd40e1b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-8fa57d21.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-8fe4d31c.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-91a3ac36.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-92418b72.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-96fb5377.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-9b0adb9d.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-9e3ca48f.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-9ee053b3.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-9ef2148f.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-a153e04e.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-a2676323.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-a374549a.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-a7feffa1.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-ab868d56.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-ab8d55a5.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-aee3677b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-af39ff37.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-b101fe7b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-bab7b2bf.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-bb3e9d83.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-bb9772ca.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-bf0f9371.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-c21b782b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-c3e05ffc.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-c83d2002.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-c879aeab.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-c9d696cc.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-ccc989e9.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-d09dea45.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-d262f1dc.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-d3d97788.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-d68ecb62.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-d79c87bc.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-dbf46854.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-dd5b74d0.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-e1e6c928.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-e1ff699f.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-e738a169.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-efd579c0.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-f06c0e00.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-f144217e.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-f1d0e453.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-f2bdceeb.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-f79c8493.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-fa8a574b.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-fae68ec0.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-sim-fee36e36.jsonl",
+        "weight":  1,
+        "source":  "sim"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-03449551-bbc.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-04380aa6-f62.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-23db752f-de5.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-310629be-8f7.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-63b719a8-1b0.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-7f50242f-986.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-a2f9bbae-f50.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    },
+    {
+        "path":  "D:\\ForgeCommander\\commander-ai-lab\\results\\ml-decisions-ds-bd331a14-a89.jsonl",
+        "weight":  4,
+        "source":  "ds"
+    }
+]

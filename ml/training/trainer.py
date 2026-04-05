@@ -547,7 +547,7 @@ def get_best_device() -> str:
         return "cpu"
     if torch.cuda.is_available():
         name = torch.cuda.get_device_name(0)
-        mem = torch.cuda.get_device_properties(0).total_mem / (1024**3)
+        mem = torch.cuda.get_device_properties(0).total_memory / (1024**3)
         logger.info("  CUDA device: %s (%.1f GB)", name, mem)
         return "cuda"
     if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():

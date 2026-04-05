@@ -443,25 +443,30 @@ public class BatchRunner {
 
         cmd.add("sim");
 
-        // Forge's sim mode looks up decks by NAME inside its own
-        // decks/commander/ directory (%APPDATA%/Forge/decks/commander/).
-        // It does NOT accept full paths — passing a path like
-        // D:\...\precon-decks\Counterpunch.dck causes "Could not load deck".
+        // Forge's sim mode looks up decks by the Name= field inside the
+        // .dck file header, NOT by filename.  For example:
+        //   Filename: Counter_Intelligence.dck
+        //   Header:   Name=Counter Intelligence
+        //   Forge expects: "Counter Intelligence" (with space)
         //
-        // Strip the path and .dck extension so Forge sees just the bare
-        // name (e.g. "Counterpunch") and finds it in its own folder.
+        // We read the Name= field from the .dck file.  If that fails,
+        // fall back to the filename with underscores replaced by spaces.
         cmd.add("-d");
         for (DeckInfo deck : decks) {
             String resolvedPath = resolveFullDeckPath(deck.deckFile);
-            // Extract just the deck name: "Counterpunch" from full path
-            String deckName = resolvedPath;
-            int lastSep = Math.max(deckName.lastIndexOf('/'), deckName.lastIndexOf('\\'));
-            if (lastSep >= 0) deckName = deckName.substring(lastSep + 1);
-            if (deckName.toLowerCase().endsWith(".dck")) {
-                deckName = deckName.substring(0, deckName.length() - 4);
+            String forgeName = readDckInternalName(resolvedPath);
+            if (forgeName == null || forgeName.isBlank()) {
+                // Fallback: strip path/extension and replace _ with space
+                forgeName = resolvedPath;
+                int lastSep = Math.max(forgeName.lastIndexOf('/'), forgeName.lastIndexOf('\\'));
+                if (lastSep >= 0) forgeName = forgeName.substring(lastSep + 1);
+                if (forgeName.toLowerCase().endsWith(".dck")) {
+                    forgeName = forgeName.substring(0, forgeName.length() - 4);
+                }
+                forgeName = forgeName.replace('_', ' ');
             }
-            cmd.add(deckName);
-            System.out.println("[DECK] Resolved: " + resolvedPath + " → Forge name: " + deckName);
+            cmd.add(forgeName);
+            System.out.println("[DECK] Resolved: " + resolvedPath + " \u2192 Forge name: \\"" + forgeName + "\\"");
         }
 
         cmd.add("-f");
@@ -929,6 +934,32 @@ public class BatchRunner {
     public interface ProgressCallback {
         void onProgress(int completed, int total, int percentDone,
                         double simsPerSec, GameResult lastResult);
+    }
+
+
+    /**
+     * Read the Name= field from a .dck file header.
+     * Forge uses this internal name (not the filename) for deck lookup.
+     * Returns null if the file can't be read or has no Name= field.
+     */
+    private String readDckInternalName(String deckFilePath) {
+        try {
+            Path path = resolveExistingDeckPath(deckFilePath);
+            if (path == null) return null;
+            List<String> lines = Files.readAllLines(path);
+            for (String line : lines) {
+                line = line.trim();
+                if (line.startsWith("Name=")) {
+                    String name = line.substring(5).trim();
+                    if (!name.isEmpty()) return name;
+                }
+                // Stop scanning after [Main] or [Commander] — Name is always in [metadata]
+                if (line.startsWith("[Main]") || line.startsWith("[Commander]")) break;
+            }
+        } catch (Exception e) {
+            System.err.println("[DECK] Could not read Name= from " + deckFilePath + ": " + e.getMessage());
+        }
+        return null;
     }
 
     private List<String> readDeckCardNames(String deckFilePath) {

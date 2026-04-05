@@ -282,6 +282,30 @@ function _applyScryfallDataToAllCards() {
 }
 
 /**
+ * Synchronously enrich a single card from the Scryfall cache.
+ * Called at draw time so cards have typeLine/cmc/oracle data
+ * before the AI's first turn, even if async enrichment hasn't completed.
+ */
+function _enrichCardFromCache(card) {
+  if (!card || !card.name) return;
+  const data = _scryfallCache[card.name];
+  if (!data) return;
+  card.imageUrl   = data.imageUrl   || card.imageUrl   || '';
+  card.typeLine   = data.typeLine   || card.typeLine   || '';
+  card.oracleText = data.oracleText || card.oracleText || '';
+  card.manaCost   = data.manaCost   || card.manaCost   || '';
+  card.cmc        = data.cmc        || card.cmc        || 0;
+  if (data.power)     card.power     = data.power;
+  if (data.toughness) card.toughness = data.toughness;
+
+  // Tag oracle roles
+  const ot = (card.oracleText || '').toLowerCase();
+  if (!card.isRamp)      card.isRamp      = /search your library for a.*land|add \{|adds? one mana/i.test(ot);
+  if (!card.isRemoval)   card.isRemoval   = /destroy target|exile target|counter target spell/i.test(ot);
+  if (!card.isBoardWipe) card.isBoardWipe = /destroy all|exile all|all creatures get -/i.test(ot);
+}
+
+/**
  * Enrich a single card object on-demand (useful for cards drawn or played after initial load).
  * Returns a Promise that resolves when the card's imageUrl is set.
  */

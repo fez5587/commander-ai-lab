@@ -8241,6 +8241,7 @@ function drawCard(playerId) {
   }
 
   const card = player.zones.library.shift(); // Take from top (index 0)
+  if (typeof _enrichCardFromCache === 'function') _enrichCardFromCache(card);
   player.zones.hand.push(card);
   addLogEntry('<strong>' + player.name + '</strong> drew a card (' + player.zones.hand.length + ' in hand)');
   updatePlayerZones();
@@ -12604,7 +12605,7 @@ function _loadUserDecksForSetup() {
         var html = '';
         for (var di = 0; di < decks.length; di++) {
           var d = decks[di];
-          var cardCount = d.card_count || d.total_cards || 0;
+          var cardCount = d.totalCards || d.card_count || d.total_cards || 0;
           var cmdr = d.commander || '';
           html += '<button class="setup-custom-deck-btn" id="setup-custom-deck-btn-' + i + '-' + di + '"' +
             ' onclick="selectSetupUserDeck(' + i + ',' + d.deck_id + ',\'' + (d.name || 'Untitled').replace(/'/g, "\\'") + '\')">' +

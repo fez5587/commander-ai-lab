@@ -1434,7 +1434,7 @@ function _loadMyDecksTab(playerIdx) {
       decks.forEach(function(d) {
         var name = d.name || 'Untitled';
         var cmdr = d.commander || d.commander_name || '';
-        var count = d.card_count || d.total_cards || 0;
+        var count = d.totalCards || d.card_count || d.total_cards || 0;
         html += '<button class="deck-precon-item" onclick="selectUserDeck(' + playerIdx + ',' + d.deck_id + ',\'' + name.replace(/'/g, "\\'") + '\')">' +
           '<span class="deck-precon-name">' + name.replace(/</g, '&lt;') + '</span>' +
           '<span class="deck-precon-cmdr">' + (cmdr ? cmdr.replace(/</g, '&lt;') + ' \u2014 ' : '') + count + ' cards</span>' +

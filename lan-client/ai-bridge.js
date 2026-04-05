@@ -895,10 +895,22 @@ class MacroActionMapper {
 
   static _canAfford(playerIdx, card, gameState) {
     if (!gameState) return false;
+    const cmc = MacroActionMapper._cmc(card);
+    if (cmc === 0) return true; // Free spells always castable
+
+    // Prefer actual mana pool if populated
+    const player = gameState.players[playerIdx];
+    const pool = player?.manaPool;
+    if (pool) {
+      const total = Object.values(pool).reduce((s, v) => s + (v || 0), 0);
+      if (total > 0) return total >= cmc;
+    }
+
+    // Fallback: count untapped lands
     const available = typeof aiCountUntappedLands === 'function'
       ? aiCountUntappedLands(playerIdx)
       : 0;
-    return available >= MacroActionMapper._cmc(card);
+    return available >= cmc;
   }
 
   static _creatureScore(card) {

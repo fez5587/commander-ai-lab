@@ -54,12 +54,12 @@
   --mtg-gold:   #C8A843;
   --mtg-colorless: #8C8C8C;
 
-  /* Battlefield theme (felt table) */
-  --felt: #2a2a2a;
-  --felt-light: #333333;
-  --felt-dark: #1e1e1e;
-  --felt-line: rgba(255,255,255,0.08);
-  --felt-line-strong: rgba(255,255,255,0.15);
+  /* Battlefield theme (charcoal felt table) */
+  --felt: #181818;
+  --felt-light: #202020;
+  --felt-dark: #0d0d0d;
+  --felt-line: rgba(255,255,255,0.06);
+  --felt-line-strong: rgba(255,255,255,0.12);
 
   /* New battlefield player colors */
   --p1: #c0392b; --p1-soft: rgba(192,57,43,0.15); --p1-glow: rgba(192,57,43,0.35); --p1-text: #e74c3c;
@@ -127,18 +127,20 @@ input { font-family: inherit; }
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
+  /* Charcoal felt weave — finer grain noise, slightly stronger */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.14'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.7;
+  opacity: 0.85;
+  mix-blend-mode: overlay;
 }
 
 .table-surface::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.6) 100%);
   pointer-events: none;
   z-index: 2;
 }
@@ -164,12 +166,17 @@ input { font-family: inherit; }
 
 .top-bar-logo {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  padding: 0 4px;
 
   /* Neon purple sign effect */
   color: #c084fc;
@@ -245,16 +252,16 @@ input { font-family: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 1px 5px;
-  font-size: 10px;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--color-text-faint);
   border-radius: 3px;
   cursor: pointer;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
   transition: background 0.15s, color 0.15s;
   position: relative;
   min-width: 0;
@@ -338,12 +345,12 @@ input { font-family: inherit; }
 }
 
 .btn-util {
-  width: 28px; height: 28px;
-  border-radius: var(--radius-md);
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -359,6 +366,20 @@ input { font-family: inherit; }
   background: rgba(200,168,67,0.15);
   border-color: rgba(200,168,67,0.5);
   color: var(--mtg-gold);
+}
+
+.btn-util.btn-util-exit {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #f87171;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-util.btn-util-exit:hover {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: #f87171;
+  color: #fff;
 }
 
 /* ============================================================
@@ -397,11 +418,19 @@ input { font-family: inherit; }
 .setup-title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: 800;
   text-align: center;
   margin-bottom: 0.15rem;
-  color: var(--mtg-gold);
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  /* Neon purple sign effect — matches .top-bar-logo */
+  color: #c084fc;
+  text-shadow:
+      0 0 6px #c084fc,
+      0 0 14px #a855f7,
+      0 0 30px #7c3aed,
+      0 0 60px rgba(124, 58, 237, 0.4);
 }
 
 .setup-subtitle {

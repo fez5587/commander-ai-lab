@@ -379,34 +379,27 @@ input { font-family: inherit; }
 }
 
 .setup-card {
-  background: rgba(26,26,46,0.97);
+  background: rgba(22,22,22,0.97);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-xl);
-  padding: 2.5rem;
+  padding: 1.25rem 1.5rem;
   width: min(860px, 95vw);
-  max-height: 92vh;
+  max-height: 96vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
   position: relative;
 }
 
 .setup-card::before {
-  content: '';
-  position: sticky;
-  top: 0; left: 0; right: 0;
-  display: block;
-  height: 3px;
-  margin: -2.5rem -2.5rem 0 -2.5rem;
-  background: linear-gradient(90deg, var(--p1), var(--p2), var(--p3), var(--p4));
-  z-index: 1;
+  display: none;
 }
 
 .setup-title {
   font-family: var(--font-display);
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.15rem;
   color: var(--mtg-gold);
   letter-spacing: 0.02em;
 }
@@ -414,21 +407,21 @@ input { font-family: inherit; }
 .setup-subtitle {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin-bottom: 2rem;
+  font-size: var(--text-xs);
+  margin-bottom: 0.85rem;
   font-family: var(--font-display);
   letter-spacing: 0.05em;
 }
 
-.setup-section { margin-bottom: 1.5rem; }
+.setup-section { margin-bottom: 0.75rem; }
 
 .setup-label {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: 600;
   color: var(--color-text);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .player-count-btns {
@@ -438,12 +431,12 @@ input { font-family: inherit; }
 
 .player-count-btn {
   flex: 1;
-  padding: 0.75rem 0.5rem;
+  padding: 0.4rem 0.5rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 600;
   font-family: var(--font-display);
 }
@@ -523,17 +516,17 @@ input { font-family: inherit; }
 
 .btn-start {
   width: 100%;
-  padding: 1rem 1.5rem;
+  padding: 0.6rem 1.5rem;
   background: rgba(139,92,246,0.2);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-lg);
   color: var(--color-primary);
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .btn-start:hover {
@@ -3252,7 +3245,7 @@ kbd {
 }
 
 .deck-precon-list {
-  max-height: 140px;
+  max-height: 90px;
   overflow-y: auto;
 }
 

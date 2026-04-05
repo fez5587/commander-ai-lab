@@ -14,7 +14,7 @@ import java.util.*;
  * Each game's decisions are appended as JSON lines to a batch-specific file.
  * Format: one DecisionSnapshot JSON object per line (JSONL/ndjson).
  *
- * Output path: results/ml-decisions-{batchId}.jsonl
+ * Output path: results/ml-decisions-sim-{batchId}.jsonl
  *
  * Usage from BatchRunner:
  *   DecisionLogger logger = new DecisionLogger(resultsDir, batchId);
@@ -39,7 +39,10 @@ public class DecisionLogger {
         if (!Files.exists(dir)) {
             Files.createDirectories(dir);
         }
-        this.outputPath = dir.resolve("ml-decisions-" + batchId + ".jsonl");
+        // Prefix with "sim-" so the Python dataset_builder.py discovers
+        // these files under the "forge" source category.  The builder scans
+        // for  ml-decisions-sim-*.jsonl  →  source = "forge".
+        this.outputPath = dir.resolve("ml-decisions-sim-" + batchId + ".jsonl");
         this.writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 

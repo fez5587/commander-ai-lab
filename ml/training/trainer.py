@@ -562,6 +562,12 @@ def get_best_device() -> str:
 # ══════════════════════════════════════════════════════════
 
 def main():
+    # Ensure logger output is visible on console
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+    )
+
     parser = argparse.ArgumentParser(
         description="Commander AI Lab — Train Policy Network"
     )

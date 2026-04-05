@@ -218,23 +218,24 @@ input { font-family: inherit; }
 }
 
 .phase-step {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 3px 5px;
+  gap: 2px;
+  padding: 1px 5px;
   font-size: 10px;
   font-weight: 600;
   color: var(--color-text-faint);
-  border-radius: var(--radius-sm);
+  border-radius: 3px;
   cursor: pointer;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   transition: background 0.15s, color 0.15s;
   position: relative;
   min-width: 0;
+  flex-shrink: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -244,7 +245,12 @@ input { font-family: inherit; }
   color: var(--color-text-muted);
 }
 
-.phase-step.active { color: #fff; }
+.phase-step.active {
+  color: #fff;
+  padding: 1px 6px;
+  font-weight: 700;
+}
+
 .phase-step.done { color: var(--color-text-faint); opacity: 0.5; }
 
 .phase-connector {
@@ -258,6 +264,7 @@ input { font-family: inherit; }
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+  align-items: stretch;
 }
 
 .btn-phase {
@@ -266,11 +273,23 @@ input { font-family: inherit; }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
+  letter-spacing: 0.03em;
+  /* Allow two-word labels (Next Phase / Next Turn) to wrap on two lines
+     instead of being clipped or forcing a wide button. */
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: 34px;
+  min-width: 64px;
+  max-width: 80px;
 }
 
 .btn-phase:hover {

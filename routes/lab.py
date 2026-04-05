@@ -454,7 +454,7 @@ async def get_log(batchId: str):
     state = active_batches.get(batchId)
     if not state:
         raise HTTPException(404, f"Batch {batchId} not found")
-    return {"lines": state.log_lines[-200:]}
+    return {"lines": state.log_lines[-2000:]}
 
 
 @router.get("/api/lab/debug-log")

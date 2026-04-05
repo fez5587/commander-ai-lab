@@ -1397,9 +1397,8 @@ const AiLab = (() => {
                 const data = await res.json();
                 const logEl = document.getElementById('lab-log-content');
                 if (logEl && data.lines) {
-                    // Show last N lines
-                    const tail = data.lines.slice(-30);
-                    logEl.textContent = tail.join('\n');
+                    // Show all lines from the backend (up to 200)
+                    logEl.textContent = data.lines.join('\n');
                     logEl.scrollTop = logEl.scrollHeight;
                 }
             } catch { /* ignore */ }

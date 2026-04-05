@@ -348,8 +348,12 @@ public class LabCli implements Callable<Integer> {
                         // v4: Enable ML decision logging if requested
             if (mlLog) {
                 String batchId = UUID.randomUUID().toString().substring(0, 8);
-                mtRunner.enableMlLogging("results", batchId);
-                System.out.println("[ML] Decision logging enabled (multi-thread) — data will be saved to results/");
+                // Use absolute path so JSONL goes to commander-ai-lab/results/
+                // regardless of CWD (which is forgeWorkDir for the subprocess)
+                String mlResultsDir = new File(outputPath).getAbsoluteFile().getParent();
+                if (mlResultsDir == null) mlResultsDir = "results";
+                mtRunner.enableMlLogging(mlResultsDir, batchId);
+                System.out.println("[ML] Decision logging enabled (multi-thread) — " + mlResultsDir);
             }
             games = mtRunner.runBatch(numGames, masterSeed);
         } else {
@@ -361,8 +365,11 @@ public class LabCli implements Callable<Integer> {
             // v4: Enable ML decision logging if requested
             if (mlLog) {
                 String batchId = UUID.randomUUID().toString().substring(0, 8);
-                runner.enableMlLogging("results", batchId);
-                System.out.println("[ML] Decision logging enabled — data will be saved to results/");
+                // Use absolute path so JSONL goes to commander-ai-lab/results/
+                String mlResultsDir = new File(outputPath).getAbsoluteFile().getParent();
+                if (mlResultsDir == null) mlResultsDir = "results";
+                runner.enableMlLogging(mlResultsDir, batchId);
+                System.out.println("[ML] Decision logging enabled — " + mlResultsDir);
             }
 
             games = runner.runBatchSingleThread(numGames, masterSeed);

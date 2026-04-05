@@ -443,13 +443,25 @@ public class BatchRunner {
 
         cmd.add("sim");
 
-        // Pass each deck as a full absolute path so Forge can find the .dck file
-        // regardless of its working directory.
+        // Forge's sim mode looks up decks by NAME inside its own
+        // decks/commander/ directory (%APPDATA%/Forge/decks/commander/).
+        // It does NOT accept full paths — passing a path like
+        // D:\...\precon-decks\Counterpunch.dck causes "Could not load deck".
+        //
+        // Strip the path and .dck extension so Forge sees just the bare
+        // name (e.g. "Counterpunch") and finds it in its own folder.
         cmd.add("-d");
         for (DeckInfo deck : decks) {
             String resolvedPath = resolveFullDeckPath(deck.deckFile);
-            cmd.add(resolvedPath);
-            System.out.println("[DECK] Resolved deck path: " + resolvedPath);
+            // Extract just the deck name: "Counterpunch" from full path
+            String deckName = resolvedPath;
+            int lastSep = Math.max(deckName.lastIndexOf('/'), deckName.lastIndexOf('\\'));
+            if (lastSep >= 0) deckName = deckName.substring(lastSep + 1);
+            if (deckName.toLowerCase().endsWith(".dck")) {
+                deckName = deckName.substring(0, deckName.length() - 4);
+            }
+            cmd.add(deckName);
+            System.out.println("[DECK] Resolved: " + resolvedPath + " → Forge name: " + deckName);
         }
 
         cmd.add("-f");

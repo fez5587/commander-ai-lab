@@ -59,7 +59,13 @@ public class LearnedPolicy implements AiPolicy {
     public LearnedPolicy(String serverUrl) {
         this.client = new PolicyServerClient(serverUrl);
         this.playstyle = "midrange";
-        this.greedy = true;
+        // Default to stochastic sampling (greedy=false) so the policy
+        // network actually explores its action distribution during live
+        // games.  With greedy=true the AI always picks argmax, which
+        // combined with a pass/land-biased policy causes the "AI only
+        // plays lands" collapse.  Callers that want deterministic
+        // replay can still override via the 3-arg constructor.
+        this.greedy = false;
         this.policyServerAvailable = false;
     }
 

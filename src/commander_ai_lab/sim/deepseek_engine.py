@@ -148,6 +148,11 @@ class DeepSeekGameEngine:
                 p.stats.turns_alive += 1
                 phase_events: list[str] = []
 
+                # ── Reset per-turn counters (land drop, etc.) ──
+                p._lands_played_this_turn = 0
+                if not hasattr(p, '_land_plays_this_turn_limit'):
+                    p._land_plays_this_turn_limit = 1
+
                 # ── Draw ──
                 if p.library:
                     drawn = p.library[-1]
@@ -357,8 +362,20 @@ class DeepSeekGameEngine:
         self, sim: SimState, pi: int,
         preferred_name: str | None, events: list[str] | None
     ):
-        """Play a land from hand. If preferred_name given, try that first."""
+        """Play a land from hand. If preferred_name given, try that first.
+
+        Enforces the one-land-per-turn rule (MTG CR 305.2). Cards that grant
+        additional land plays (e.g. Exploration, Oracle of Mul Daya) may bump
+        ``_land_plays_this_turn_limit`` on the player to a higher value.
+        """
         p = sim.players[pi]
+
+        # ── LAND-PER-TURN ENFORCEMENT ──
+        max_land_plays = getattr(p, '_land_plays_this_turn_limit', 1)
+        lands_this_turn = getattr(p, '_lands_played_this_turn', 0)
+        if lands_this_turn >= max_land_plays:
+            return  # Already used land drop(s) this turn
+
         land_idx = -1
 
         if preferred_name:
@@ -385,6 +402,7 @@ class DeepSeekGameEngine:
         sim.next_card_id += 1
         sim.add_to_battlefield(pi, land_card)
         p.stats.lands_played += 1
+        p._lands_played_this_turn = lands_this_turn + 1
 
         if events is not None and self.record_log:
             events.append(f"Played land: {land_card.name}")

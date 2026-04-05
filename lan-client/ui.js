@@ -843,6 +843,20 @@ function openZoneModal(playerId, zone) {
 }
 
 function closeZoneModal() {
+  // Auto-shuffle the library when closing, and ONLY the library
+  if (zoneModalPlayerId !== null && gameState) {
+    const player = gameState.players[zoneModalPlayerId];
+    if (player && player.zones.library.length > 1) {
+      const lib = player.zones.library;
+      for (let i = lib.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lib[i], lib[j]] = [lib[j], lib[i]];
+      }
+      addLogEntry('&#x1F500; <strong>' + player.name + "'s</strong> library shuffled.");
+      updateZoneCountsForPlayer(zoneModalPlayerId);
+    }
+  }
+
   const modal = document.getElementById('zone-modal');
   if (modal) modal.classList.remove('visible');
   zoneModalPlayerId = null;

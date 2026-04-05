@@ -50,8 +50,18 @@ async function startGameWithDecks() {
   if (typeof renderPlayerPanels === 'function') renderPlayerPanels();
   if (typeof updateActivePlayerHighlight === 'function') updateActivePlayerHighlight();
 
-  // Kick off image enrichment for all players in the background (non-blocking)
-  enrichAllZonesWithScryfall();
+  // Block on Scryfall enrichment BEFORE the game becomes interactive. This is
+  // critical: the opening 7 cards are dealt via player.zones.hand.push(lib.shift())
+  // directly (bypassing drawCard()), so they don't get _enrichCardFromCache'd at
+  // draw time. Without awaiting here, the AI's first turn fires with empty
+  // typeLine/cmc/oracleText/isRamp/isRemoval flags and can only play lands.
+  addLogEntry('\u23F3 Loading card data from Scryfall...');
+  try {
+    await enrichAllZonesWithScryfall();
+  } catch (e) {
+    console.warn('[precon-loader] Enrichment failed, continuing anyway:', e);
+  }
+  addLogEntry('\u2705 Card data loaded. Game ready.');
 }
 
 

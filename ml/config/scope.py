@@ -292,7 +292,15 @@ class DistillationDefaults:
     ppo_episodes_per_iter: int = 64
     ppo_lr: float = 3e-4
     ppo_clip_epsilon: float = 0.2
-    ppo_entropy_coeff: float = 0.01
+    # Increased from 0.01 to 0.04 to prevent premature convergence on the
+    # "pass"/"land" macro-actions.  The policy-collapse bug (see
+    # commander-ai-lab-land-only-bug-analysis.md) is exacerbated by a low
+    # entropy bonus: PPO settled on argmax very early in training, so the
+    # model never learned to cast creatures / removal / draw spells even
+    # when they were affordable.  A higher entropy bonus keeps the action
+    # distribution flat enough during self-play for those alternatives to
+    # accumulate reward signal.
+    ppo_entropy_coeff: float = 0.04
     ppo_eval_episodes: int = 100
 
     # Dataset mixing — Forge-only by default (Phase 5 follow-up decision)

@@ -147,7 +147,7 @@ async def start_game(req: StartGameRequest):
 
     # Build a BatchState so the forge_runner watchdog and progress tracking
     # work the same way they do for overnight batch runs.
-    state = BatchState(batch_id=game_id)
+    state = BatchState(batch_id=game_id, total_games=1, threads=1)
 
     _sessions[game_id] = {
         "game_id":         game_id,

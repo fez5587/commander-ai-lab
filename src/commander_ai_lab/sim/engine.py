@@ -135,6 +135,11 @@ class GameEngine:
         sim.active_player_index = pi
         phase_events: list[str] = []
 
+        # ── Reset per-turn counters (land drop, etc.) ──
+        p._lands_played_this_turn = 0
+        if not hasattr(p, '_land_plays_this_turn_limit'):
+          p._land_plays_this_turn_limit = 1
+
         # ── Capture ML snapshot BEFORE turn actions ──
         pre_snapshot = None
         if self.ml_log:
@@ -454,8 +459,20 @@ class GameEngine:
     return sim
 
   def _play_land(self, sim: SimState, pi: int) -> None:
-    """Play the first land from hand onto the battlefield."""
+    """Play the first land from hand onto the battlefield.
+
+    Enforces the one-land-per-turn rule (MTG CR 305.2). Cards that grant
+    additional land plays may bump ``_land_plays_this_turn_limit`` on the
+    player to a higher value.
+    """
     p = sim.players[pi]
+
+    # ── LAND-PER-TURN ENFORCEMENT ──
+    max_land_plays = getattr(p, '_land_plays_this_turn_limit', 1)
+    lands_this_turn = getattr(p, '_lands_played_this_turn', 0)
+    if lands_this_turn >= max_land_plays:
+      return  # Already used land drop(s) this turn
+
     land_idx = -1
     for i, card in enumerate(p.hand):
       if card.is_land():
@@ -470,6 +487,7 @@ class GameEngine:
     sim.next_card_id += 1
     sim.add_to_battlefield(pi, land_card)
     p.stats.lands_played += 1
+    p._lands_played_this_turn = lands_this_turn + 1
 
   @staticmethod
   def _send_to_graveyard(sim: SimState, card, owner_idx: int) -> None:

@@ -229,61 +229,54 @@ class CommanderGameState:
     def stack_is_empty(self) -> bool:
         return len(self.stack) == 0
 
-    # Bug 9 fix: stub get_legal_moves() and apply_move() so turn_manager
-    # doesn't crash.  These delegate to the rules engine once implemented.
     def get_legal_moves(self, seat: int) -> list[dict]:
-        """Return legal moves for a seat.
+        """Return legal moves for ``seat``.
 
-        During DECLARE_BLOCKERS phase, emits block moves for defending
-        creatures against each attacker in sim_state.combat.
-        Otherwise returns pass-only (stub for remaining rules engine).
+        Delegates to :mod:`legal_move_generator` which produces macro
+        actions (play_land, cast_creature, cast_removal, cast_ramp,
+        cast_draw, cast_commander, attack, block, pass_priority).
         """
-        moves: list[dict] = [{"id": 0, "category": "pass_priority", "description": "Pass"}]
-        combat = self.sim_state.combat
+        # Local import to avoid a circular reference at module load
+        from commander_ai_lab.sim.legal_move_generator import generate_legal_moves
+        return generate_legal_moves(self, seat)
 
-        # Emit block moves during declare_blockers phase
-        if (
-            combat
-            and combat.active
-            and self.current_phase in (Phase.DECLARE_BLOCKERS, "declare_blockers")
-            and seat != self.active_player_seat
-        ):
-            move_id = 1000
-            my_creatures = [
-                c for c in self.sim_state.get_battlefield(seat)
-                if c.is_creature() and not c.tapped
-            ]
-            for atk_id in combat.attackers:
-                atk = next(
-                    (c for bf in self.sim_state.battlefields for c in bf if c.id == atk_id),
-                    None,
-                )
-                if atk is None:
-                    continue
-                for blocker in my_creatures:
-                    moves.append({
-                        "id": move_id,
-                        "category": "block",
-                        "blocker_id": blocker.id,
-                        "attacker_id": atk_id,
-                        "description": f"Block {atk.name} with {blocker.name}",
-                    })
-                    move_id += 1
-
-        return moves
     def apply_move(self, seat: int, move_id: int) -> None:
-        """Apply a chosen move.
+        """Apply a chosen move to the game state.
 
-        Handles 'block' moves by updating sim_state.combat.blockers.
-        Other categories are no-op stubs until the rules engine is wired.
+        Supports all move categories produced by
+        :mod:`legal_move_generator`.  For categories that require full
+        rules simulation (spell resolution, combat damage), this is
+        still a thin layer — it mutates the game state and delegates
+        final resolution to the engine/turn manager.
         """
-        # Find the move dict
         all_moves = self.get_legal_moves(seat)
         move = next((m for m in all_moves if m["id"] == move_id), None)
         if move is None:
             return
 
-        if move.get("category") == "block":
+        category = move.get("category")
+
+        if category == "pass_priority":
+            return
+
+        if category == "play_land":
+            self._apply_play_land(seat, move)
+            return
+
+        if category in ("cast_creature", "cast_removal", "cast_ramp",
+                        "cast_draw", "cast_spell"):
+            self._apply_cast_spell(seat, move)
+            return
+
+        if category == "cast_commander":
+            self._apply_cast_commander(seat, move)
+            return
+
+        if category == "attack":
+            self._apply_declare_attacker(seat, move)
+            return
+
+        if category == "block":
             combat = self.sim_state.combat
             if combat and combat.active:
                 atk_id = move["attacker_id"]
@@ -291,6 +284,143 @@ class CommanderGameState:
                 if atk_id not in combat.blockers:
                     combat.blockers[atk_id] = []
                 combat.blockers[atk_id].append(blocker_id)
+            return
+
+    # ── Move execution helpers ───────────────────────────────
+
+    def _apply_play_land(self, seat: int, move: dict) -> None:
+        """Remove the chosen land from hand, place on battlefield, bump counter."""
+        if not (0 <= seat < len(self.commander_players)):
+            return
+        player = self.commander_players[seat]
+        # Enforce land-per-turn at apply-time as a second safety check
+        if player.lands_played_this_turn >= player.land_plays_allowed:
+            return
+        card_name = move.get("card_name")
+        idx = next(
+            (i for i, c in enumerate(player.hand)
+             if c.name == card_name and c.is_land()),
+            -1,
+        )
+        if idx < 0:
+            return
+        land = player.hand.pop(idx)
+        land.owner_id = seat
+        land.tapped = False
+        land.turn_played = self.turn
+        land.id = self.sim_state.next_card_id
+        self.sim_state.next_card_id += 1
+        self.sim_state.add_to_battlefield(seat, land)
+        player.lands_played_this_turn += 1
+        self.land_drop_used = True
+        if hasattr(player, "base") and hasattr(player.base, "stats"):
+            player.base.stats.lands_played += 1
+
+    def _apply_cast_spell(self, seat: int, move: dict) -> None:
+        """Remove the spell from hand, place it on the battlefield.
+
+        This is a simplified resolution (no stack, no targeting) sufficient
+        for macro-action training and live games until the full stack
+        engine is wired.
+        """
+        if not (0 <= seat < len(self.commander_players)):
+            return
+        player = self.commander_players[seat]
+        card_name = move.get("card_name")
+        idx = next(
+            (i for i, c in enumerate(player.hand) if c.name == card_name),
+            -1,
+        )
+        if idx < 0:
+            return
+        card = player.hand.pop(idx)
+        card.owner_id = seat
+        card.turn_played = self.turn
+        card.id = self.sim_state.next_card_id
+        self.sim_state.next_card_id += 1
+
+        # Creatures and permanents land on the battlefield; instants and
+        # sorceries go straight to the graveyard after resolving.
+        type_line = (card.type_line or "").lower()
+        if "instant" in type_line or "sorcery" in type_line:
+            player.graveyard.append(card)
+        else:
+            card.tapped = False
+            self.sim_state.add_to_battlefield(seat, card)
+
+        if hasattr(player, "base") and hasattr(player.base, "stats"):
+            player.base.stats.spells_cast += 1
+            if card.is_creature():
+                player.base.stats.creatures_played += 1
+
+    def _apply_cast_commander(self, seat: int, move: dict) -> None:
+        """Cast the commander from the command zone (increments tax)."""
+        if not (0 <= seat < len(self.commander_players)):
+            return
+        player = self.commander_players[seat]
+        card_name = move.get("card_name")
+        idx = next(
+            (i for i, c in enumerate(player.commander_zone)
+             if c.name == card_name),
+            -1,
+        )
+        if idx < 0 and player.commander_zone:
+            idx = 0
+        if idx < 0:
+            return
+        cmd = player.commander_zone.pop(idx)
+        cmd.owner_id = seat
+        cmd.turn_played = self.turn
+        cmd.tapped = False
+        cmd.is_commander = True
+        cmd.id = self.sim_state.next_card_id
+        self.sim_state.next_card_id += 1
+        self.sim_state.add_to_battlefield(seat, cmd)
+        player.commander_cast_count += 1
+        if hasattr(player, "base") and hasattr(player.base, "stats"):
+            player.base.stats.spells_cast += 1
+            if cmd.is_creature():
+                player.base.stats.creatures_played += 1
+
+    def _apply_declare_attacker(self, seat: int, move: dict) -> None:
+        """Mark a creature as attacking in the current combat state.
+
+        ``combat.attackers`` is a ``dict[int, int]`` mapping attacker
+        card id to defending seat.  If no defending seat has been
+        chosen yet, fall back to the first non-active, non-eliminated
+        opponent.
+        """
+        combat = self.sim_state.combat
+        if combat is None:
+            return
+        atk_id = move.get("attacker_id")
+        if atk_id is None:
+            return
+
+        # Tap the attacker unless it has vigilance
+        for card in self.sim_state.get_battlefield(seat):
+            if card.id == atk_id:
+                has_vigilance = (
+                    card.has_keyword("vigilance")
+                    if hasattr(card, "has_keyword") else False
+                )
+                if not has_vigilance:
+                    card.tapped = True
+                break
+
+        # Determine defending seat
+        defending_seat = combat.defending_seat
+        if defending_seat < 0 or defending_seat == seat:
+            for i, p in enumerate(self.commander_players):
+                if i != seat and not p.eliminated:
+                    defending_seat = i
+                    break
+            if defending_seat >= 0:
+                combat.defending_seat = defending_seat
+
+        if defending_seat >= 0:
+            combat.attackers[atk_id] = defending_seat
+        combat.active = True
     def living_players(self) -> list[CommanderPlayer]:
         return [p for p in self.commander_players if not p.eliminated]
 

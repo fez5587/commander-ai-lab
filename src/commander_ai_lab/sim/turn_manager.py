@@ -267,6 +267,10 @@ class CommanderTurnManager:
         player = self.gs.players[seat]
         logger.debug("Turn %d — %s's turn begins", turn_num, player.name)
 
+        # ── Reset per-turn counters at the start of each turn ──
+        # Enforces MTG CR 305.2 (one land per turn unless modified).
+        player.lands_played_this_turn = 0
+
         for phase in PHASES:
             if self.game_over:
                 return

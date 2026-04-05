@@ -1162,7 +1162,17 @@ input { font-family: inherit; }
   box-shadow: 0 0 12px rgba(139,92,246,0.4);
 }
 
-/* Summoning sick overlay */
+/* ── Summoning Sickness — animated smoky purple diagonal lines ── */
+@keyframes sick-drift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 28px 28px; }
+}
+
+@keyframes sick-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.85; }
+}
+
 .battlefield-card.summoning-sick::before {
   content: '';
   position: absolute;
@@ -1170,13 +1180,26 @@ input { font-family: inherit; }
   background: repeating-linear-gradient(
     45deg,
     transparent,
-    transparent 3px,
-    rgba(0,0,0,0.15) 3px,
-    rgba(0,0,0,0.15) 6px
+    transparent 4px,
+    rgba(139, 92, 246, 0.18) 4px,
+    rgba(139, 92, 246, 0.18) 5px,
+    transparent 5px,
+    transparent 9px,
+    rgba(168, 85, 247, 0.10) 9px,
+    rgba(168, 85, 247, 0.10) 10px
   );
+  background-size: 28px 28px;
   border-radius: 4px;
   pointer-events: none;
   z-index: 2;
+
+  /* Drift animation — lines slowly crawl diagonally */
+  animation:
+    sick-drift  3s linear infinite,
+    sick-pulse  2.4s ease-in-out infinite;
+
+  /* Smoky soft-edge glow over the card */
+  box-shadow: inset 0 0 14px rgba(139, 92, 246, 0.20);
 }
 
 /* Monarch badge */

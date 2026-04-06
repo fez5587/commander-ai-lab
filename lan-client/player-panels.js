@@ -228,6 +228,11 @@ function removeEmblem(playerId, idx) {
   renderEnhancedPanels();
 }
 
+// index: 0  1  2  3  →  area: 1  2  4  3
+// players[2] → bottom-RIGHT (area-4), players[3] → bottom-LEFT (area-3)
+// Keeps turn order P1→P2→P3→P4 visually clockwise.
+var PLAYER_INDEX_TO_QUADRANT = [1, 2, 4, 3];
+
 /**
  * Re-render all enhanced player panels in their quadrant positions.
  */
@@ -236,7 +241,7 @@ function renderEnhancedPanels() {
 
   for (var i = 0; i < gameState.players.length; i++) {
     var player = gameState.players[i];
-    var quadrant = i + 1;
+    var quadrant = PLAYER_INDEX_TO_QUADRANT[i] || (i + 1);
     var areaEl = document.getElementById('player-area-' + quadrant);
     if (!areaEl) continue;
 

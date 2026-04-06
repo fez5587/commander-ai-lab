@@ -266,7 +266,7 @@ def build_dataset(
             logger.info("Processing %s [%s] ...", jsonl_file.name, source)
             file_count = 0
 
-            with open(jsonl_file, "r") as f:
+            with open(jsonl_file, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f):
                     line = line.strip()
                     if not line:

@@ -130,7 +130,7 @@ class EloHistory:
     def _load(self):
         if os.path.exists(self.path):
             try:
-                with open(self.path, "r") as f:
+                with open(self.path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 self.entries = data.get("entries", [])
             except Exception:
@@ -138,7 +138,7 @@ class EloHistory:
 
     def save(self):
         os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
-        with open(self.path, "w") as f:
+        with open(self.path, "w", encoding="utf-8") as f:
             json.dump({"entries": self.entries}, f, indent=2)
 
     def append(self, generation: int, ratings: Dict[str, float]):

@@ -68,7 +68,7 @@ def cmd_status(args):
     for f in jsonl_files:
         lines = 0
         try:
-            with open(f) as fh:
+            with open(f, encoding="utf-8") as fh:
                 lines = sum(1 for _ in fh)
         except Exception:
             pass
@@ -130,7 +130,7 @@ def cmd_inspect(args):
 
     print(f"\n  Inspecting: {filepath.name}\n")
     count = 0
-    with open(filepath) as f:
+    with open(filepath, encoding="utf-8") as f:
         for i, line in enumerate(f):
             if i >= args.limit:
                 break
@@ -150,7 +150,7 @@ def cmd_inspect(args):
             except Exception as e:
                 print(f"  [{i:>4}] ERROR: {e}")
 
-    with open(filepath) as f:
+    with open(filepath, encoding="utf-8") as f:
         total = sum(1 for _ in f)
     print(f"\n  Showing {count} of {total:,} total decisions.\n")
 

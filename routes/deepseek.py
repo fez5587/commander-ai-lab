@@ -226,7 +226,7 @@ def _finish_sim(sim_id, summary, game_results, engine=None):
         results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
         os.makedirs(results_dir, exist_ok=True)
         batch_path = os.path.join(results_dir, f'ml-decision-sim-{sim_id}.json')
-        with open(batch_path, 'w') as f:
+        with open(batch_path, 'w', encoding='utf-8') as f:
             json.dump(batch_data, f, indent=2, default=str)
         logger.info(f'Saved batch results to {batch_path}')
 

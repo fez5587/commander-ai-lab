@@ -38,7 +38,7 @@ def load_precon_cards(precon_dir: str) -> dict:
         cards = {"commander": None, "creatures": [], "spells": [], "lands": [], "artifacts": [], "all": []}
 
         section = "Main"
-        with open(dck_file, "r") as f:
+        with open(dck_file, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("//") or line.startswith("Name="):
@@ -380,7 +380,7 @@ def main():
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     total_decisions = 0
 
-    with open(args.output, "w") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         for game_idx in range(args.games):
             # Pick two random decks
             d1_name, d2_name = random.sample(deck_names, 2)

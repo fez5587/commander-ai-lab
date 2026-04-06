@@ -253,7 +253,7 @@ class DecisionExporter:
         filename = f"ml-decisions-ppo-{self._batch_id}.jsonl"
         filepath = os.path.join(self.config.output_dir, filename)
 
-        with open(filepath, "w") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             for record in self._records:
                 f.write(json.dumps(record) + "\n")
 

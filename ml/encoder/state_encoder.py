@@ -415,7 +415,7 @@ def encode_decisions_file(
     states = []
     raw = []
 
-    with open(jsonl_path, "r") as f:
+    with open(jsonl_path, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             if max_samples and i >= max_samples:
                 break

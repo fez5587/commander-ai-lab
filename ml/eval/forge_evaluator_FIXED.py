@@ -280,7 +280,7 @@ class ForgeEvaluator:
         if not Path(batch_path).exists():
             logger.warning("[Eval] Batch JSON not found at %s — falling back to synthetic", batch_path)
             return self._run_synthetic_eval(service)
-        with open(batch_path) as f:
+        with open(batch_path, encoding="utf-8") as f:
             batch = json.load(f)
         games_list = batch.get("games", [])
         if not games_list:
@@ -543,6 +543,6 @@ class ForgeEvaluator:
             "games": [asdict(r) for r in self._records],
         }
         os.makedirs(self.cfg.results_dir, exist_ok=True)
-        with open(self._result_path, "w") as f:
+        with open(self._result_path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
         logger.info("[Eval %s] Results written to %s", self.cfg.run_id, self._result_path)

@@ -322,7 +322,7 @@ class SupervisedTrainer:
             }
             serializable_history.append(entry)
 
-        with open(history_path, "w") as f:
+        with open(history_path, "w", encoding="utf-8") as f:
             json.dump(serializable_history, f, indent=2)
         logger.info("  History saved:  %s", history_path)
 
@@ -644,7 +644,7 @@ def main():
 
         # Save evaluation results
         eval_path = os.path.join(ckpt_dir, "eval_results.json")
-        with open(eval_path, "w") as f:
+        with open(eval_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
         logger.info(f"  Results saved: {eval_path}")
         return
@@ -702,7 +702,7 @@ def main():
         print_evaluation(results)
 
         eval_path = os.path.join(ckpt_dir, "eval_results.json")
-        with open(eval_path, "w") as f:
+        with open(eval_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
         logger.info("  Eval results saved: %s", eval_path)
     else:

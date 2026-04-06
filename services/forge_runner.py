@@ -499,7 +499,7 @@ def _run_deepseek_batch_thread(
                 for fname in sorted(os.listdir(results_dir), reverse=True):
                     if fname.startswith('ml-decision-') and fname.endswith('.json'):
                         try:
-                            with open(os.path.join(results_dir, fname), 'r') as rf:
+                            with open(os.path.join(results_dir, fname), 'r', encoding='utf-8') as rf:
                                 past = json.loads(rf.read())
                             for dd in past.get('decks', []):
                                 dname = dd.get('deckName', '')

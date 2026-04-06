@@ -330,7 +330,7 @@ def label_decisions_file(jsonl_path: str) -> Tuple[np.ndarray, List[dict]]:
     labels = []
     raw = []
 
-    with open(jsonl_path, "r") as f:
+    with open(jsonl_path, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             line = line.strip()
             if not line:

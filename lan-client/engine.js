@@ -5286,8 +5286,7 @@ function setLife(playerId, newLife) {
     eliminatePlayer(playerId, 'life total reached 0');
   }
   checkStateBasedActions();
-  // Sync enhanced player panels
-  if (typeof renderEnhancedPanels === 'function') renderEnhancedPanels();
+  if (typeof renderCmdDmgInline === 'function') renderCmdDmgInline();
 }
 
 // ============================================================
@@ -5322,8 +5321,7 @@ function adjustCommanderDamage(targetPlayerId, sourcePlayerId, amount) {
     panelContainer.replaceWith(newPanel);
   }
   checkStateBasedActions();
-  // Sync enhanced player panels
-  if (typeof renderEnhancedPanels === 'function') renderEnhancedPanels();
+  if (typeof renderCmdDmgInline === 'function') renderCmdDmgInline();
 }
 
 // ============================================================
@@ -5356,8 +5354,6 @@ function adjustPoison(playerId, amount) {
     panelContainer.replaceWith(newPanel);
   }
   if (gameState.rulesEngine && gameState.rulesEngine.sbaChecks) checkStateBasedActions();
-  // Sync enhanced player panels
-  if (typeof renderEnhancedPanels === 'function') renderEnhancedPanels();
 }
 
 // ============================================================
@@ -13049,6 +13045,8 @@ function startGame() {
   renderHandArea();
   renderPhaseTracker();
   updateTurnDisplay();
+  if (typeof renderCmdDmgInline === 'function') renderCmdDmgInline();
+  if (typeof refreshLeftPanelTriggers === 'function') refreshLeftPanelTriggers();
 
   // Set default search focus
   setTimeout(() => {

@@ -759,7 +759,7 @@ class DistillationLoop:
         """Save generation history to JSON."""
         path = os.path.join(self.config.history_dir, "generations.json")
         history = [g.to_dict() for g in self.generations]
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(history, f, indent=2)
         logger.info("  Generation history saved: %s", path)
 
@@ -793,7 +793,7 @@ class DistillationLoop:
     def _save_summary(self, summary: Dict):
         """Save final summary to JSON."""
         path = os.path.join(self.config.history_dir, "summary.json")
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, default=str)
         logger.info("  Summary saved: %s", path)
 

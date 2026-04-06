@@ -91,7 +91,7 @@ def parse_forge_jsonl(path: Path) -> List[Dict[str, Any]]:
         game_id, turn, phase, active_seat, state, action, outcome
     """
     snapshots = []
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         for lineno, line in enumerate(f, 1):
             line = line.strip()
             if not line:

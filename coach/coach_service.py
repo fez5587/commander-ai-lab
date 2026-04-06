@@ -77,7 +77,7 @@ class CoachService:
             logger.warning("Deck report not found: %s", deck_id)
             return None
         try:
-            with open(report_path, "r") as f:
+            with open(report_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             return DeckReport(**data)
         except Exception as e:
@@ -95,7 +95,7 @@ class CoachService:
         """Persist a coaching session to disk and SQLite."""
         COACH_SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
         path = COACH_SESSIONS_DIR / f"{session.sessionId}.json"
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(session.model_dump_json(indent=2))
         if _DB_AVAILABLE:
             try:
@@ -147,7 +147,7 @@ class CoachService:
         if not path.exists():
             return None
         try:
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             return CoachSession(**data)
         except Exception as e:
@@ -168,7 +168,7 @@ class CoachService:
         sessions = []
         for f in sorted(COACH_SESSIONS_DIR.glob("*.json"), reverse=True):
             try:
-                with open(f, "r") as fh:
+                with open(f, "r", encoding="utf-8") as fh:
                     data = json.load(fh)
                 if deck_id and data.get("deckId", "") != deck_id:
                     continue

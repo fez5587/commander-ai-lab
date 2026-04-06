@@ -269,7 +269,7 @@
           <button onclick="adjustLife(0,1)" aria-label="Increase P1 life">+</button>
         </div>
       </div>
-      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-0">
+      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-0" onclick="openCmdDmgMatrix()" title="Open Commander Damage matrix">
         <span class="life-panel-label">Cmd Dmg</span>
         <div class="cmd-dmg-inline-row">&#8212;</div>
       </div>
@@ -288,7 +288,7 @@
           <button onclick="adjustLife(1,1)" aria-label="Increase P2 life">+</button>
         </div>
       </div>
-      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-1">
+      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-1" onclick="openCmdDmgMatrix()" title="Open Commander Damage matrix">
         <span class="life-panel-label">Cmd Dmg</span>
         <div class="cmd-dmg-inline-row">&#8212;</div>
       </div>
@@ -307,7 +307,7 @@
           <button onclick="adjustLife(2,1)" aria-label="Increase P3 life">+</button>
         </div>
       </div>
-      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-2">
+      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-2" onclick="openCmdDmgMatrix()" title="Open Commander Damage matrix">
         <span class="life-panel-label">Cmd Dmg</span>
         <div class="cmd-dmg-inline-row">&#8212;</div>
       </div>
@@ -326,7 +326,7 @@
           <button onclick="adjustLife(3,1)" aria-label="Increase P4 life">+</button>
         </div>
       </div>
-      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-3">
+      <div class="life-panel-box cmd-dmg-box" id="cmd-dmg-inline-3" onclick="openCmdDmgMatrix()" title="Open Commander Damage matrix">
         <span class="life-panel-label">Cmd Dmg</span>
         <div class="cmd-dmg-inline-row">&#8212;</div>
       </div>
@@ -368,6 +368,24 @@
 
   <!-- Sidebar edge tab -->
   <div id="sidebar-edge-tab" class="sidebar-edge-tab" title="Toggle card search">&#x2039;</div>
+
+  <!-- LEFT ACTION PANEL (triggers + quick actions) -->
+  <div id="left-action-panel" class="collapsed">
+    <div class="left-panel-header">
+      <span class="left-panel-title">Triggers <span id="left-panel-trigger-count" class="left-panel-count">0</span></span>
+      <button class="sidebar-toggle" onclick="toggleLeftPanel()" title="Close panel">&#x2715;</button>
+    </div>
+    <div class="left-panel-actions">
+      <button class="left-panel-btn" onclick="openTokenModal((typeof gameState !== 'undefined' && gameState) ? (gameState.currentPlayerIndex || 0) : 0)" title="Create token">&#x2728; Create Token</button>
+      <button class="left-panel-btn" onclick="autoArrangeBattlefield()" title="Auto-arrange battlefield">&#x21C4; Auto-Arrange</button>
+    </div>
+    <div class="left-panel-body" id="left-panel-triggers">
+      <div class="left-panel-empty">No pending triggers.</div>
+    </div>
+  </div>
+
+  <!-- Left panel edge tab -->
+  <div id="left-panel-edge-tab" class="left-panel-edge-tab" onclick="toggleLeftPanel()" title="Toggle quick actions">&#x203A;</div>
 
 </div><!-- /.table-surface / #game-battlefield -->
 
@@ -762,6 +780,121 @@ function toggleCollectionPanel() {
   var panel = document.getElementById('panel-collection');
   if (panel) panel.classList.toggle('hidden');
 }
+
+function toggleLeftPanel() {
+  var panel = document.getElementById('left-action-panel');
+  if (panel) {
+    panel.classList.toggle('collapsed');
+    if (!panel.classList.contains('collapsed') && typeof refreshLeftPanelTriggers === 'function') {
+      refreshLeftPanelTriggers();
+    }
+  }
+}
+
+// Render the triggers list inside the left action panel.
+// Mirrors #trigger-stack-body rendering but stays embedded in the panel.
+function refreshLeftPanelTriggers() {
+  var body = document.getElementById('left-panel-triggers');
+  var countEl = document.getElementById('left-panel-trigger-count');
+  if (!body) return;
+  if (typeof gameState === 'undefined' || !gameState) {
+    if (countEl) countEl.textContent = '0';
+    body.innerHTML = '<div class="left-panel-empty">No pending triggers.</div>';
+    return;
+  }
+  var pending = (gameState.triggerStack || []).filter(function(t){ return !t.resolved; });
+  if (countEl) countEl.textContent = String(pending.length);
+  if (pending.length === 0) {
+    body.innerHTML = '<div class="left-panel-empty">No pending triggers.</div>';
+    return;
+  }
+  var icons = (typeof TRIGGER_TYPE_ICONS !== 'undefined') ? TRIGGER_TYPE_ICONS : {};
+  var labels = (typeof TRIGGER_TYPE_LABELS !== 'undefined') ? TRIGGER_TYPE_LABELS : {};
+  var html = '';
+  pending.forEach(function(t) {
+    var icon = icons[t.type] || '\u2747';
+    var label = labels[t.type] || t.type || '';
+    var owner = (gameState.players && gameState.players[t.ownerIndex]) || {};
+    var color = owner.color || '#888';
+    var name = (t.cardName || 'Unknown').replace(/</g,'&lt;');
+    var snip = (t.oracleSnippet || '').replace(/</g,'&lt;');
+    html +=
+      '<div class="lpt-item">' +
+        '<div class="lpt-icon">' + icon + '</div>' +
+        '<div class="lpt-body">' +
+          '<div class="lpt-title">' + name + '</div>' +
+          '<div class="lpt-type">' + label + '</div>' +
+          '<div class="lpt-text">' + snip + '</div>' +
+        '</div>' +
+        '<div class="lpt-dot" style="background:' + color + '"></div>' +
+        '<button class="lpt-dismiss" title="Dismiss" onclick="if(typeof dismissTrigger===\'function\')dismissTrigger(' + t.id + ');refreshLeftPanelTriggers();">&#x2715;</button>' +
+      '</div>';
+  });
+  body.innerHTML = html;
+}
+
+// Populate each seat's Cmd Dmg score-area box with per-opponent badges.
+// Skips the seat's own player number from the display.
+function renderCmdDmgInline() {
+  if (typeof gameState === 'undefined' || !gameState || !gameState.players) return;
+  var players = gameState.players;
+  for (var i = 0; i < players.length; i++) {
+    var box = document.getElementById('cmd-dmg-inline-' + i);
+    if (!box) continue;
+    var row = box.querySelector('.cmd-dmg-inline-row');
+    if (!row) continue;
+    var me = players[i];
+    if (!me) continue;
+    var html = '';
+    for (var j = 0; j < players.length; j++) {
+      if (j === i) continue;  // leave own player number out
+      var op = players[j];
+      if (!op) continue;
+      var dmg = (me.commanderDamage && me.commanderDamage[op.id]) || 0;
+      var danger = dmg >= 21 ? ' danger' : dmg >= 15 ? ' crit' : dmg >= 8 ? ' warn' : '';
+      html +=
+        '<span class="cdi-badge' + danger + '" title="Commander damage from ' + (op.name||'P'+(j+1)) + '">' +
+          '<span class="cdi-dot" style="background:' + (op.color||'#888') + '"></span>' +
+          'P' + (j + 1) + ' <b>' + dmg + '</b>' +
+        '</span>';
+    }
+    row.innerHTML = html || '&#8212;';
+  }
+}
+
+// Hook into the trigger-stack badge updater so the left panel stays in sync.
+(function() {
+  if (typeof window === 'undefined') return;
+  var tryHook = function() {
+    if (typeof window.updateTriggerBadge === 'function' && !window.updateTriggerBadge._leftPanelHooked) {
+      var orig = window.updateTriggerBadge;
+      window.updateTriggerBadge = function() {
+        var r = orig.apply(this, arguments);
+        try { refreshLeftPanelTriggers(); } catch(e) {}
+        return r;
+      };
+      window.updateTriggerBadge._leftPanelHooked = true;
+    }
+    // Also wrap adjustCommanderDamage so badges refresh after matrix clicks.
+    if (typeof window.adjustCommanderDamage === 'function' && !window.adjustCommanderDamage._cdmInlineHooked) {
+      var origAdj = window.adjustCommanderDamage;
+      window.adjustCommanderDamage = function() {
+        var r = origAdj.apply(this, arguments);
+        try { renderCmdDmgInline(); } catch(e) {}
+        return r;
+      };
+      window.adjustCommanderDamage._cdmInlineHooked = true;
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryHook);
+  } else {
+    tryHook();
+  }
+  // Also attempt the hook again a tick later (engine.js loads after this script in some orderings)
+  setTimeout(tryHook, 0);
+  setTimeout(tryHook, 500);
+})();
 
 // Listen for deck exports from the deck builder iframe
 window.addEventListener('message', function(e) {

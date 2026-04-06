@@ -22,7 +22,7 @@ new_method = '''
         if not Path(batch_path).exists():
             logger.warning("[Eval] Batch JSON not found at %s -- falling back to synthetic", batch_path)
             return self._run_synthetic_eval(service)
-        with open(batch_path) as f:
+        with open(batch_path, encoding='utf-8') as f:
             batch = json.load(f)
         games_list = batch.get("games", [])
         if not games_list:

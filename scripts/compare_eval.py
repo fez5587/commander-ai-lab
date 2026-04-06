@@ -113,7 +113,7 @@ def load_result(path: str) -> dict:
         print(f"ERROR: File not found: {path}", file=sys.stderr)
         sys.exit(2)
     try:
-        with open(p) as f:
+        with open(p, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         print(f"ERROR: Invalid JSON in {path}: {e}", file=sys.stderr)
@@ -289,7 +289,7 @@ def main() -> int:
             "passed": delta >= args.min_delta and pval < args.alpha,
         }
         Path(args.json_out).parent.mkdir(parents=True, exist_ok=True)
-        with open(args.json_out, "w") as jf:
+        with open(args.json_out, "w", encoding="utf-8") as jf:
             json.dump(out, jf, indent=2)
         print(f"Comparison JSON written to: {args.json_out}")
 

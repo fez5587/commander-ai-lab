@@ -696,7 +696,7 @@ class PPOTrainer:
         self.save_checkpoint()
 
         history_path = os.path.join(cfg.checkpoint_dir, "ppo_history.json")
-        with open(history_path, "w") as f:
+        with open(history_path, "w", encoding="utf-8") as f:
             json.dump(self.history, f, indent=2, default=str)
 
         summary = {

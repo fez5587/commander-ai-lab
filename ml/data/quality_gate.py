@@ -523,7 +523,7 @@ class QualityGate:
         report_path = os.path.join(
             self.config.reports_dir, f"quality_{timestamp}.json"
         )
-        with open(report_path, "w") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(metrics, f, indent=2)
         logger.info("Quality report saved: %s", report_path)
 
@@ -582,6 +582,6 @@ class QualityGate:
             path = os.path.join(self.config.reports_dir, "verdict_history.json")
 
         history = [v.to_dict() for v in self.verdicts]
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(history, f, indent=2)
         logger.info("Verdict history saved: %s (%d entries)", path, len(history))

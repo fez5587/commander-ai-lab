@@ -130,7 +130,7 @@ async def ml_status():
         for f in sorted(results_dir.glob("ml-decisions-*.jsonl")):
             lines = 0
             try:
-                with open(f) as fh:
+                with open(f, encoding="utf-8") as fh:
                     lines = sum(1 for _ in fh)
             except Exception:
                 pass
@@ -168,7 +168,7 @@ async def ml_get_decisions(filename: str, limit: int = 100, offset: int = 0):
         raise HTTPException(404, f"ML decisions file not found: {filename}")
     decisions = []
     try:
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             for i, line in enumerate(f):
                 if i < offset:
                     continue
@@ -436,7 +436,7 @@ def _run_training_pipeline(
             best_model, _ = load_checkpoint(summary["checkpoint_path"], device)
             eval_results = evaluate_model(best_model, test_states, test_labels, device)
             eval_path = os.path.join(ckpt_dir, "eval_results.json")
-            with open(eval_path, "w") as f:
+            with open(eval_path, "w", encoding="utf-8") as f:
                 json.dump(eval_results, f, indent=2)
         # Done
         with _training_lock:
@@ -530,7 +530,7 @@ async def ml_data_status():
         for f in sorted(results_dir.glob("ml-decisions-*.jsonl")):
             line_count = 0
             try:
-                with open(f, "r") as fh:
+                with open(f, "r", encoding="utf-8") as fh:
                     line_count = sum(1 for _ in fh)
             except Exception:
                 pass
@@ -561,7 +561,7 @@ async def ml_data_status():
     eval_results = None
     if eval_path.exists():
         try:
-            with open(eval_path, "r") as f:
+            with open(eval_path, "r", encoding="utf-8") as f:
                 eval_results = json.load(f)
         except Exception:
             pass
@@ -705,7 +705,7 @@ def _run_tournament_pipeline(episodes: int, playstyle: str):
             playstyle=playstyle,
         )
         output_path = os.path.join(ckpt_dir, "tournament_results.json")
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(result.to_dict(), f, indent=2)
         with _tournament_lock:
             _tournament_state.phase = "done"
@@ -758,7 +758,7 @@ async def ml_tournament_results():
     project_root = Path(__file__).resolve().parent.parent
     results_path = project_root / "ml" / "models" / "checkpoints" / "tournament_results.json"
     if results_path.exists():
-        with open(results_path, "r") as f:
+        with open(results_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"error": "No tournament results found. Run a tournament first."}
 
@@ -798,7 +798,7 @@ async def ml_stats():
     eval_path = ckpt_dir / "eval_results.json"
     if eval_path.exists():
         try:
-            with open(eval_path, "r") as f:
+            with open(eval_path, "r", encoding="utf-8") as f:
                 eval_results = json.load(f)
         except Exception:
             pass
@@ -1057,14 +1057,14 @@ async def ml_distillation_history():
 
     if history_path.exists():
         try:
-            with open(history_path, "r") as f:
+            with open(history_path, "r", encoding="utf-8") as f:
                 result["generations"] = json.load(f)
         except Exception:
             pass
 
     if summary_path.exists():
         try:
-            with open(summary_path, "r") as f:
+            with open(summary_path, "r", encoding="utf-8") as f:
                 result["summary"] = json.load(f)
         except Exception:
             pass
@@ -1203,7 +1203,7 @@ async def ml_elo_history():
     history_path = project_root / "data" / "elo_history.json"
     if history_path.exists():
         try:
-            with open(history_path, "r") as f:
+            with open(history_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             pass

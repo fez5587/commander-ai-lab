@@ -417,7 +417,7 @@ def main():
 
     # Save results
     output_path = args.output or os.path.join(ckpt_dir, "tournament_results.json")
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(result.to_dict(), f, indent=2)
     logger.info("Results saved: %s", output_path)
 

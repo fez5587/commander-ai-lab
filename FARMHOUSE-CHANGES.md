@@ -41,6 +41,15 @@ After the fixes: a 40-game Monte Carlo takes 0.4 s with real numbers (10 spells 
 - Status label says "Language model" instead of the hardcoded "Claude Opus".
 - `RAG_AUTOBUILD` (default off in our deployment) controls whether the card-search index is built at startup (113k embeddings; about an hour).
 
+### Decision model (Laya / Kev), wired and off
+`src/commander_ai_lab/sim/farmhouse_decide.py` asks a `/v1/systemone` server which of the nine actions to take, in one forward pass.
+`DECISION_MODE=shadow` records whether it agrees with the LLM (the game still uses the LLM); `assist` uses it when `DECISION_MIN_CONF`
+sure; `off` (default) does nothing. `scripts/farmhouse_decision_eval.py` replays recorded decisions through it.
+
+**Measured 2026-10-26 on 149 recorded LLM decisions: zero-shot, both Laya checkpoints agreed with the LLM less often than always
+guessing the commonest action** (English 16.1%, typed-decisions 18.6%, baseline 27.5%), at 2-4 s per answer on a 4-thread CPU. It is only
+worth using after fine-tuning on this game's decisions; the write-up is `LAYA-EVALUATION.md` in the farmhouse-os repo's commander-lab folder.
+
 ## Settings (environment variables)
 | Variable | Meaning |
 |---|---|
@@ -49,6 +58,8 @@ After the fixes: a 40-game Monte Carlo takes 0.4 s with real numbers (10 spells 
 | `COACH_PROVIDER`, `DECK_GEN_PROVIDER` = `local`, `DECK_GEN_MODEL` | use the local model, not Anthropic |
 | `OLLAMA_BASE_URL`, `RAG_EMBEDDING_MODEL`, `RAG_AUTOBUILD` | card-search embeddings (one host only: vectors differ between hosts) |
 | `BRAIN_API_BASE` (**no** `/v1`; the client appends it), `BRAIN_MODEL`, `BRAIN_MAX_TOKENS`, `BRAIN_STEPS` | the simulator's LLM opponents |
+| `DECISION_URL`, `DECISION_MODEL`, `DECISION_MODE` (`off`/`shadow`/`assist`), `DECISION_MIN_CONF`, `DECISION_TIMEOUT` | the decision model above |
+| `ollama` Python package | required by the card-search index build (ChromaDB's Ollama embedder imports it) |
 
 ## Tests
 `tests/farmhouse/` (standard library only, no network): `python -I -X utf8 tests/farmhouse/test_farmhouse_deck_links.py`, `..._sim.py`, `..._fit.py`.

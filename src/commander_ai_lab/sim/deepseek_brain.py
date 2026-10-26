@@ -254,6 +254,7 @@ def build_game_state_snapshot(
         "my_life": me.life,
         "opp_life": opp.life,
         "my_mana_total": mana_total,
+        "land_play_available": getattr(me, "_lands_played_this_turn", 0) < getattr(me, "_land_plays_this_turn_limit", 1),
         "my_mana_by_color": mana_colors,
         "my_hand": my_hand,
         "my_board": my_board,
@@ -268,6 +269,8 @@ def build_game_state_snapshot(
         "opp_graveyard": opp_gy,
         "my_library_count": cards_remaining,
         "opp_library_count": len(opp.library),
+        "opp_hand_count": len(opp.hand),
+        "stack_supported": False,
         "deck_drawn_pct": pct_drawn,
     }
 
@@ -578,6 +581,11 @@ class DeepSeekBrain:
         if available_mana is not None:
             snapshot["my_mana_available"] = available_mana
 
+        from commander_ai_lab.sim.strategic_context import turn_context
+        advice = turn_context(snapshot, (deck_context or {}).get("strategic_preferences"))
+        snapshot["strategic_advice"] = advice
+        candidate_actions = advice["candidate_actions"]
+
         if self.config.cache_enabled:
             cache_key = self._cache_key(snapshot)
             if cache_key in self._cache:
@@ -587,6 +595,18 @@ class DeepSeekBrain:
                 cached["latency_ms"] = round((time.time() - t_start) * 1000, 1)
                 return cached
 
+        from commander_ai_lab.sim import farmhouse_decide as _fd  # FARMHOUSE_DECISION
+        _fd_mode = _fd.mode()
+        if _fd_mode == "assist":
+            _fd_ans = _fd.ask(snapshot, actions=candidate_actions)
+            if (_fd_ans and _fd_ans["choice"] in candidate_actions
+                    and _fd_ans["confidence"] >= float(os.environ.get("DECISION_MIN_CONF", "0.7"))):
+                result = _fd.as_decision(_fd_ans, t_start)
+                result["strategic_advice"] = advice
+                if self.config.log_decisions:
+                    self._log_decision(snapshot, result, player_index)
+                return result
+
         if not self._connected:
             return self._fallback_action(snapshot, t_start, "not_connected")
 
@@ -595,7 +615,10 @@ class DeepSeekBrain:
             try:
                 result = self._call_llm(snapshot)
                 result["source"] = "llm"
+                if _fd_mode == "shadow":  # FARMHOUSE_DECISION_SHADOW
+                    _fd.record(_fd.ask(snapshot, actions=candidate_actions), result.get("action"))
                 result["latency_ms"] = round((time.time() - t_start) * 1000, 1)
+                result["strategic_advice"] = advice
 
                 if self.config.cache_enabled:
                     self._put_cache(cache_key, result)
@@ -882,4 +905,5 @@ class DeepSeekBrain:
             "api_base": self.config.api_base,
             "pending_log_entries": len(self._decision_log),
             "current_game_id": self._current_game_id,
+            "decision": __import__("commander_ai_lab.sim.farmhouse_decide", fromlist=["stats"]).stats(),  # FARMHOUSE_DECISION_STATS
         }

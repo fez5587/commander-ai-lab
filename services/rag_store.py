@@ -448,7 +448,7 @@ def query_cards(
 
     try:
         has_filters = bool(color_identity or type_filter or require_trigger)
-        fetch_n = n_results * 4 if has_filters else n_results
+        fetch_n = n_results * 12  # FARMHOUSE_RAG_DEDUPE (one index entry per printing)
         query_kwargs = dict(
             query_texts=[query],
             n_results=min(fetch_n, 200),
@@ -465,6 +465,7 @@ def query_cards(
         return []
 
     cards: list[dict] = []
+    _fh_seen = set()  # FARMHOUSE_RAG_DEDUPE
     ids = results["ids"][0]
     docs = results["documents"][0] if results.get("documents") else [""] * len(ids)
     metas = results["metadatas"][0] if results.get("metadatas") else [{}] * len(ids)
@@ -493,6 +494,10 @@ def query_cards(
                 continue
 
         # Parse oracle from document — handle both old pipe format and new NL format
+        _fh_name = meta.get("name", "")
+        if _fh_name in _fh_seen:
+            continue
+        _fh_seen.add(_fh_name)
         parts = doc.split(" | ", 3)
         oracle = parts[-1] if len(parts) > 1 else doc
 

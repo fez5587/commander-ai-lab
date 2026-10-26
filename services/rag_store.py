@@ -368,6 +368,9 @@ def build_index(force: bool = False, batch_size: int = DEFAULT_BATCH_SIZE) -> di
 def ensure_rag_store() -> None:
     """Build the ChromaDB vector store if it is missing or stale."""
     global _rag_ready
+    if os.environ.get("RAG_AUTOBUILD", "0") != "1":  # FARMHOUSE_RAG_AUTOBUILD_V1
+        logger.info("RAG vector store auto-build is off (RAG_AUTOBUILD is not 1).")
+        return
     with _rag_lock:
         if _rag_ready:
             return

@@ -516,6 +516,8 @@ def _fetch_deck_card_data(deck_id):
                 'keywords': r[7] or '',
                 'mana_cost': r[8] or '',
             })
+    from services.farmhouse_sim import fill_card_data as _fh_fill  # FARMHOUSE_SIM_DATA_B
+    _fh_fill(card_data)
     return deck_name, card_data
 
 

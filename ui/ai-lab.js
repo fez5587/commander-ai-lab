@@ -97,7 +97,7 @@ const AiLab = (() => {
             <details class="lab-import-bar">
                 <summary class="lab-import-bar-label" style="cursor:pointer;">\u2B07 Advanced Import (URL / Text / Precon)</summary>
                 <div class="lab-import-actions">
-                    <button class="lab-import-action-btn" onclick="AiLab.showUrlImport()" title="Import from Archidekt or EDHREC URL">
+                    <button class="lab-import-action-btn" onclick="AiLab.showUrlImport()" title="Import from a Moxfield, Archidekt or EDHREC URL">
                         <span class="import-icon">\uD83D\uDD17</span> URL Import
                     </button>
                     <button class="lab-import-action-btn" onclick="AiLab.showMetaPicker()" title="Browse EDHREC average decks for popular commanders">
@@ -120,14 +120,14 @@ const AiLab = (() => {
                 </div>
                 <div class="lab-url-import-body">
                     <input type="text" id="lab-import-url-input"
-                           placeholder="Paste Archidekt or EDHREC URL (e.g. https://archidekt.com/decks/12345)"
+                           placeholder="Paste a Moxfield, Archidekt or EDHREC URL (e.g. https://moxfield.com/decks/abc123)"
                            autocomplete="off" />
                     <button class="lab-url-import-btn" id="lab-url-import-btn" onclick="AiLab.importFromUrl()">
                         Import
                     </button>
                 </div>
                 <div class="lab-import-hint">
-                    Supported: <strong>archidekt.com/decks/...</strong> · <strong>edhrec.com/average-decks/...</strong> · <strong>edhrec.com/commanders/...</strong>
+                    Supported: <strong>moxfield.com/decks/...</strong> · <strong>archidekt.com/decks/...</strong> · <strong>edhrec.com/average-decks/...</strong> · <strong>edhrec.com/commanders/...</strong>
                 </div>
                 <div class="lab-import-status" id="lab-url-import-status"></div>
             </div>
@@ -177,8 +177,7 @@ const AiLab = (() => {
                 <div class="lab-control-group">
                     <label>Engine:</label>
                     <select id="lab-engine">
-                        <option value="java" selected>Forge Heuristic</option>
-                        <option value="deepseek">DeepSeek LLM</option>
+                        <option value="deepseek" selected>LLM opponents (twin-turbo)</option>
                     </select>
                 </div>
                 <button class="lab-run-btn" id="lab-run-btn" onclick="AiLab.startBatch()">

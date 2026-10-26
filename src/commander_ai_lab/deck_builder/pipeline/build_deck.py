@@ -119,6 +119,9 @@ def validate_card_names(
 # ---------------------------------------------------------------------------
 
 
+from .farmhouse_fit import fit_deck as _farmhouse_fit_deck  # FARMHOUSE_FIT_V1
+
+
 def build_deck(request: BuildRequest) -> BuildResult:
     """
     Execute the full 7-step deck build pipeline.
@@ -306,6 +309,7 @@ def build_deck(request: BuildRequest) -> BuildResult:
         logger.warning(f"Ratio enforcement returned {total} cards")
 
     # ── Step 7: Assemble final deck ────────────────────────────────────────
+    adjusted = _farmhouse_fit_deck(adjusted, target_ratios, commander_ci, warnings)  # FARMHOUSE_FIT_V1b
     logger.info("Step 7: Assembling final deck")
 
     # Build a globally-deduplicated name list. enforce_deck_ratios can

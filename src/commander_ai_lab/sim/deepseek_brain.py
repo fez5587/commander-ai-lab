@@ -632,6 +632,8 @@ class DeepSeekBrain:
             "top_p": self.config.top_p,
             "stream": False,
         }
+        if os.environ.get("LLM_REASONING"):  # FARMHOUSE_BRAIN_REASONING
+            payload["reasoning_effort"] = os.environ["LLM_REASONING"]
 
         url = self.config.api_base.rstrip("/") + "/v1/chat/completions"
         req_data = json.dumps(payload).encode("utf-8")

@@ -515,6 +515,8 @@ def _run_deepseek_batch_thread(
         deck_meta = {}
         for dn in deck_names:
             raw_cards = _load_deck_cards_by_name(dn)
+            from services.farmhouse_sim import prepare as _fh_prepare  # FARMHOUSE_SIM_DATA
+            raw_cards = _fh_prepare(raw_cards or [])
             if not raw_cards:
                 state.log_lines.append(f'[DeepSeek Batch] WARNING: Could not load deck "{dn}", skipping.')
                 continue

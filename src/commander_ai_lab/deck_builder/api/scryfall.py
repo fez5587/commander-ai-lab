@@ -16,8 +16,26 @@ import requests
 from ..core.models import CardEntry
 
 BASE_URL = "https://api.scryfall.com"
+_SF_HEADERS = {"User-Agent": "CommanderAILab/3.0 (self-hosted)", "Accept": "application/json"}  # FARMHOUSE_SCRYFALL_HEADERS_V1
+
+
+def _fh_request(method, url, **kw):
+    """requests.<method> that backs off on Scryfall's 429 / 5xx, honouring Retry-After (a build makes hundreds of
+    calls; upstream had no retry, so one 429 anywhere ended it). Gives up after 5 tries and returns the last response."""
+    import time as _t
+    resp = None
+    for attempt in range(5):
+        resp = getattr(requests, method)(url, **kw)
+        if resp.status_code not in (429, 500, 502, 503, 504):
+            return resp
+        try:
+            wait = float(resp.headers.get("Retry-After", "") or 0)
+        except ValueError:
+            wait = 0.0
+        _t.sleep(max(wait, 2.0) + attempt * 2.0)
+    return resp
 _last_request_time: float = 0.0
-REQUEST_DELAY = 0.1  # 100ms between requests (Scryfall asks for 50-100ms)
+REQUEST_DELAY = 0.25  # 250ms: upstream used 100ms (10/s, Scryfall's ceiling) and drew 429s when builds ran back to back
 
 
 def _throttle() -> None:
@@ -32,7 +50,7 @@ def _throttle() -> None:
 def _get(endpoint: str, params: Optional[Dict] = None) -> Dict:
     """Make a throttled GET request to Scryfall."""
     _throttle()
-    resp = requests.get(f"{BASE_URL}{endpoint}", params=params, timeout=15)
+    resp = _fh_request("get", f"{BASE_URL}{endpoint}", params=params, headers=_SF_HEADERS, timeout=15)
     resp.raise_for_status()
     return resp.json()
 
@@ -113,7 +131,7 @@ def search_cards_by_identity(
         if not next_url:
             break
         _throttle()
-        resp = requests.get(next_url, timeout=15)
+        resp = _fh_request("get", next_url, headers=_SF_HEADERS, timeout=15)
         resp.raise_for_status()
         data = resp.json()
 
@@ -168,9 +186,9 @@ def get_cards_by_names(names: List[str]) -> List[CardEntry]:
         batch = names[i : i + 75]
         identifiers = [{"name": n} for n in batch]
         _throttle()
-        resp = requests.post(
-            f"{BASE_URL}/cards/collection",
-            json={"identifiers": identifiers},
+        resp = _fh_request(
+            "post", f"{BASE_URL}/cards/collection",
+            json={"identifiers": identifiers}, headers=_SF_HEADERS,
             timeout=30,
         )
         resp.raise_for_status()

@@ -97,6 +97,9 @@ def _import_from_url(url: str) -> dict:
         if not m:
             raise ValueError("Could not parse Archidekt deck ID from URL")
         return _fetch_archidekt_deck(m.group(1))
+    if "moxfield.com/decks/" in url:  # FARMHOUSE_DECK_LINKS_V1
+        from services.farmhouse_deck_links import fetch_profile as _fh_fetch_profile
+        return _fh_fetch_profile(url)
     if "edhrec.com/average-decks/" in url:
         slug = re.search(r"/average-decks/([^/?#]+)", url).group(1)
         return _fetch_edhrec_average(slug.replace("-", " "))

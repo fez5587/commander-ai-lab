@@ -888,7 +888,11 @@ async def import_decklist(deck_id: int, request: FastAPIRequest):
     """
     deck = _get_deck_or_404(deck_id)
     body = await request.json()
-    text = body.get('text', '')
+    try:  # FARMHOUSE_DECK_LINKS_V1b
+        from services.farmhouse_deck_links import expand as _fh_expand
+        text, _fh_name = _fh_expand(body.get('text', '') or body.get('url', ''))
+    except ValueError as _fh_err:
+        return JSONResponse({'error': str(_fh_err)}, status_code=400)
     clear_first = body.get('clearFirst', False)
 
     if not text.strip():
@@ -980,8 +984,12 @@ async def import_decklist_new(request: FastAPIRequest):
     Body: { "text": "...", "name": "My Deck" }
     """
     body = await request.json()
-    text = body.get('text', '')
-    deck_name = body.get('name', '').strip()
+    try:  # FARMHOUSE_DECK_LINKS_V1c
+        from services.farmhouse_deck_links import expand as _fh_expand
+        text, _fh_name = _fh_expand(body.get('text', '') or body.get('url', ''))
+    except ValueError as _fh_err:
+        return JSONResponse({'error': str(_fh_err)}, status_code=400)
+    deck_name = body.get('name', '').strip() or (_fh_name or '')
 
     if not text.strip():
         return JSONResponse({'error': 'No decklist text provided'}, status_code=400)
@@ -1064,6 +1072,10 @@ def _scryfall_fuzzy_lookup(name: str) -> Optional[dict]:
     Fuzzy-search Scryfall for a card name (used by the scanner pipeline).
     Returns the raw Scryfall JSON dict, or None on failure.
     """
+    from services.farmhouse_deck_links import local_card as _fh_local  # FARMHOUSE_LOCAL_LOOKUP
+    _fh_hit = _fh_local(name)
+    if _fh_hit:
+        return _fh_hit
     _scryfall_rate_limit()
     try:
         encoded = quote(name)

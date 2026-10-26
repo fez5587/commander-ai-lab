@@ -62,6 +62,7 @@ async def _lifespan(application: FastAPI):
         CFG.precon_dir = _resolve_precon_dir()
     init_collection_db()
     validate_forge_config()
+    init_coach_service()  # FARMHOUSE_COACH_INIT_V1
     if not PRECON_INDEX:
         download_precon_database()
     if not COMMANDER_META:
@@ -85,7 +86,7 @@ async def _lifespan(application: FastAPI):
             try:
                 from services.rag_store import check_staleness, build_index
                 info = check_staleness()
-                if info.get("stale"):
+                if info.get("stale") and os.environ.get("RAG_AUTOBUILD", "0") == "1":  # FARMHOUSE_RAG_MONITOR_V1
                     log.info("RAG staleness monitor: %s — triggering rebuild.", info["reason"])
                     loop.run_in_executor(None, lambda: build_index(force=True))
                 else:

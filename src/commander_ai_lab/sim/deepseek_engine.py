@@ -247,7 +247,16 @@ class DeepSeekGameEngine:
     # DeepSeek-powered turn
     # ──────────────────────────────────────────────────────────
 
-    def _play_turn_deepseek(
+    def _play_turn_deepseek(  # FARMHOUSE_MULTISTEP
+        self, sim: SimState, pi: int, turn: int, events: list[str],
+        deck_context: dict | None = None,
+    ) -> str:
+        from commander_ai_lab.sim import farmhouse_turns as _ft
+        if _ft.steps() <= 1:
+            return self._play_turn_deepseek_single(sim, pi, turn, events, deck_context)
+        return _ft.play_turn(self, sim, pi, turn, events, deck_context)
+
+    def _play_turn_deepseek_single(
         self, sim: SimState, pi: int, turn: int, events: list[str],
         deck_context: dict | None = None,
     ) -> str:

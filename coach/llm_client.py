@@ -74,7 +74,7 @@ class LLMClient:
         try:
             status = await self.check_connection()
             if status.get("connected") and status.get("active_model"):
-                self._resolved_model = status["active_model"]
+                self._resolved_model = self.model if self.model in (status.get("models") or []) else status["active_model"]  # FARMHOUSE_MODEL_PIN_V1
                 logger.info("Resolved Ollama model: %s", self._resolved_model)
                 return self._resolved_model
         except Exception:
@@ -103,6 +103,14 @@ class LLMClient:
         }
         if force_json:
             body["response_format"] = {"type": "json_object"}
+        # FARMHOUSE_LLM_KNOBS_V1 (see patch_app.py)
+        import os as _fh_os
+        _fh_effort = _fh_os.environ.get("LLM_REASONING", "").strip()
+        if _fh_effort:
+            body["reasoning_effort"] = _fh_effort
+        _fh_cap = int(_fh_os.environ.get("LLM_MAX_TOKENS", "0") or 0)
+        if _fh_cap:
+            body["max_tokens"] = min(body["max_tokens"], _fh_cap)
         return body
 
     # ── Response parsing ──────────────────────────────────────
@@ -259,6 +267,17 @@ class LLMClient:
         raise ConnectionError(
             f"LLM call failed after {LLM_MAX_RETRIES} attempts: {last_error}"
         )
+
+    def check_connection_sync(self) -> dict:  # FARMHOUSE_LLM_SYNC_V1
+        """Blocking version of check_connection (upstream called it and never defined it)."""
+        try:
+            _r = httpx.get(f"{self.base_url}/models", timeout=5.0, headers={"Content-Type": "application/json"})
+            _r.raise_for_status()
+            _ids = [m.get("id", "unknown") for m in _r.json().get("data", [])]
+            return {"connected": True, "models": _ids,
+                    "active_model": self.model if self.model in _ids else (_ids[0] if _ids else self.model)}
+        except Exception as _e:
+            return {"connected": False, "error": str(_e), "models": [], "active_model": None}
 
     async def check_connection(self) -> dict:
         """Check if Ollama is reachable. Returns status dict."""

@@ -109,7 +109,7 @@ def _get_bulk_download_url() -> str:
         meta = json.loads(resp.read())
     for entry in meta.get("data", []):
         if entry.get("type") == "default_cards":
-            return entry["download_uri"]
+            return entry.get("jsonl_download_uri") or entry["download_uri"]  # FARMHOUSE_SCRYFALL_URL_V1
     raise RuntimeError("Could not find default_cards entry in Scryfall bulk-data manifest")
 
 
@@ -122,12 +122,18 @@ def _download_and_index(conn: sqlite3.Connection) -> int:
     url = _get_bulk_download_url()
     logger.info("Downloading Scryfall default_cards bulk export (~100 MB)...")
 
-    req = Request(url, headers=_API_HEADERS)
-    with urlopen(req, timeout=300) as resp:
-        raw_bytes = resp.read()
+    req = Request(url, headers=_API_HEADERS)  # FARMHOUSE_SCRYFALL_JSONL_V1
+    _resp = urlopen(req, timeout=300)
 
-    cards_json: list[dict] = json.loads(raw_bytes)
-    logger.info(f"Received {len(cards_json)} card objects from Scryfall.")
+    def _cards_stream():
+        import gzip
+        stream = gzip.GzipFile(fileobj=_resp) if url.split("?")[0].endswith(".gz") else _resp
+        for _line in stream:
+            _line = _line.strip().rstrip(b",")
+            if _line and _line not in (b"[", b"]"):
+                yield json.loads(_line)
+
+    cards_json = _cards_stream()
 
     # Wipe existing data for a clean rebuild
     conn.execute("DELETE FROM cards")

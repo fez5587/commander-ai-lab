@@ -549,7 +549,7 @@ class CoachService:
                 status.llmModels = []
                 status.error = "Anthropic API key not configured. Set ANTHROPIC_API_KEY env var."
         else:
-            llm_status = self.llm.check_connection()
+            llm_status = self.llm.check_connection_sync()  # FARMHOUSE_COACH_STATUS_V1 (was an un-awaited coroutine)
             status.llmConnected = llm_status.get("connected", False)
             status.llmModel = llm_status.get("active_model")
             status.llmModels = llm_status.get("models", [])

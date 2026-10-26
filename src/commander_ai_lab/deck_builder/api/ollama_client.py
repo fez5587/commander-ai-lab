@@ -23,8 +23,9 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 # Ollama exposes an OpenAI-compatible endpoint
-DEFAULT_BASE_URL = "http://localhost:11434/v1"
-DEFAULT_MODEL = "qwen2.5:7b"
+import os as _farmhouse_os  # FARMHOUSE_LLM_ENV_V1
+DEFAULT_BASE_URL = _farmhouse_os.environ.get("LLM_URL", "http://localhost:11434/v1")
+DEFAULT_MODEL = _farmhouse_os.environ.get("LLM_MODEL", "qwen2.5:7b")
 
 
 def _get_client(base_url: str = DEFAULT_BASE_URL) -> OpenAI:
@@ -118,6 +119,13 @@ def chat(
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
 
+    # FARMHOUSE_LLM_KNOBS_V1
+    _fh_effort = _farmhouse_os.environ.get("LLM_REASONING", "").strip()
+    if _fh_effort:
+        kwargs["extra_body"] = {"reasoning_effort": _fh_effort}
+    _fh_cap = int(_farmhouse_os.environ.get("LLM_MAX_TOKENS", "0") or 0)
+    if _fh_cap:
+        kwargs["max_tokens"] = min(kwargs["max_tokens"], _fh_cap)
     response = client.chat.completions.create(**kwargs)
     return response.choices[0].message.content or ""
 

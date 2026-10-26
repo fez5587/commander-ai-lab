@@ -55,7 +55,14 @@ After the fixes: a 40-game Monte Carlo takes 0.4 s with real numbers (10 spells 
 Run them with `-I` and from outside the package folders; do not put `services/` on `sys.path` (`services/logging.py` shadows the standard library).
 
 ## Things still worth doing
-- Run the LLM-opponent games **in parallel**: each move is a short prompt with a short answer, which a batching server handles well.
+- **Make the LLM-opponent turns faster** (a piloted move averages ~7.5 s: about 2.2k tokens in, ~30 out, so reading the prompt dominates).
+  These are ideas, not measured; none is implemented:
+  - *Shared prefix:* about 1.2k tokens of every prompt (the system prompt) are identical each time; a llama.cpp server can reuse them
+    if the calls share the prefix, so only the board state is read each move.
+  - *Smaller prompt:* send a compact board state instead of the indented JSON the engine builds now (`json.dumps(snapshot, indent=2)`
+    in `deepseek_brain.py`).
+  - *Parallel games:* run several games at once, which would also fill the GPU while one game waits on a move. Caveat: for long prompts
+    two requests at once gave no extra throughput on a V100 (reading the prompt is compute-bound), so measure before relying on it.
 - Opponents are the engine's heuristics; only the piloted seat uses the model.
 - Build the card-search index and measure it.
 - The upstream `LICENSE` is missing (`pyproject.toml` says MIT). Ask the author to add one before publishing a derivative widely.

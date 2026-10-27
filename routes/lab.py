@@ -109,7 +109,7 @@ async def start_batch(req: StartRequest, background_tasks: BackgroundTasks):
     active_batches[batch_id] = state
 
     os.makedirs(CFG.results_dir, exist_ok=True)
-    output_path = os.path.join(CFG.results_dir, f"ml-decision-{batch_id}.json")
+    output_path = os.path.abspath(os.path.join(CFG.results_dir, f"ml-decision-{batch_id}.json"))  # FARMHOUSE_RESULTS_ABS
     state.result_path = output_path
 
       # Auto-export deckbuilder decks to .dck if not already exported

@@ -48,6 +48,10 @@ CHAT_REASONING = os.environ.get("PHASE_LLM_REASONING", "none")
 CHAT_MAX_TOKENS = int(os.environ.get("PHASE_LLM_MAX_TOKENS_CAP", "256"))
 MAX_LLM_CALLS = int(os.environ.get("PHASE_LLM_MAX_CALLS", "600"))
 LOCAL_ONLY = ("127.0.0.1", "::1")
+# A late-game prompt is thousands of tokens; reading it takes a 27B model on a V100 20-30 s. The engine waits MODEL_TIMEOUT per question and the
+# relay a little less, and the engine switches the model seats off after PHASE_LLM_MAX_FAILS failures in a row, so a dead model costs a few minutes at most.
+RELAY_TIMEOUT = float(os.environ.get("PHASE_LLM_RELAY_TIMEOUT", "55"))
+MODEL_TIMEOUT = os.environ.get("PHASE_LLM_TIMEOUT_S", "60")
 MAX_DECK_ENTRIES = 400
 
 _jobs = {}
@@ -150,7 +154,7 @@ def engine_env(spec):
     env = dict(os.environ)
     local = "http://127.0.0.1:%d" % PORT
     env.update(PHASE_LLM_SEATS=",".join(str(x) for x in llm["seats"]), PHASE_LLM_MODEL=llm["model"], PHASE_LLM_API_KEY="",
-               PHASE_LLM_MAX_CALLS=str(llm["max_calls"]), PHASE_LLM_DIFFICULTY=spec["difficulty"])
+               PHASE_LLM_MAX_CALLS=str(llm["max_calls"]), PHASE_LLM_DIFFICULTY=spec["difficulty"], PHASE_LLM_TIMEOUT_S=MODEL_TIMEOUT)
     if llm["kind"] == "chat":
         env.update(PHASE_LLM_PROVIDER="OpenAiCompatible", PHASE_LLM_BASE_URL=local + "/llm/v1")
     else:
@@ -174,7 +178,8 @@ WINNER = re.compile(r"Game ended cleanly\. Winner: (draw|P(\d))")
 TURNS = re.compile(r"^Turns played: (\d+)")
 ELIM = re.compile(r"^ELIMINATED: P(\d)\s+turn=(\d+)")
 RESOLVED = re.compile(r"^\s+P(\d)\s+main=\s*(\d+)\s+commander=(\d+)")
-LLM_STAT = re.compile(r"^LLM-SEAT seat=(\d) asked=(\d+) used=(\d+)")
+LLM_STAT = re.compile(r"^LLM-SEAT seat=(\d) asked=(\d+) used=(\d+)(?: total_calls=(\d+))?(?: timeouts=(\d+))?(?: avg_ms=(\d+))?(?: avg_prompt_chars=(\d+))?")
+LLM_OFF = re.compile(r"^LLM-SEAT-DISABLED after (\d+) consecutive failures")
 SKIP = re.compile(r"^\s+SKIP (.+?): commander '(.+)' not in card db")
 PRE = re.compile(r"^\s+(.+?)\s+\|\s+commander: (.+?)\s+\|\s+main: (\d+) cards")
 
@@ -241,14 +246,25 @@ def parse(output):
 
 
 def llm_summary(llm, lines):
-    """The model seats' own counters (the engine prints one every 25th question), last value per seat."""
-    per_seat = {}
+    """The model seats' own counters (the engine prints one every 25th question), last value per seat, plus the breaker and the cost."""
+    per_seat, extra, disabled = {}, {}, None
     for ln in lines:
         m = LLM_STAT.match(ln)
         if m:
             per_seat[int(m.group(1))] = {"asked": int(m.group(2)), "used": int(m.group(3))}
-    return {"seats": llm["seats"], "kind": llm["kind"], "model": llm["model"], "max_calls": llm["max_calls"], "per_seat": per_seat,
-            "note": "counters are printed every 25th question, so the last few may be missing"}
+            for key, grp in (("timeouts", 5), ("avg_ms", 6), ("avg_prompt_chars", 7)):
+                if m.group(grp) is not None:
+                    extra[key] = int(m.group(grp))
+            continue
+        m = LLM_OFF.match(ln)
+        if m:
+            disabled = int(m.group(1))
+    out = {"seats": llm["seats"], "kind": llm["kind"], "model": llm["model"], "max_calls": llm["max_calls"], "per_seat": per_seat,
+           "note": "counters are printed every 25th question, so the last few may be missing"}
+    out.update(extra)
+    if disabled is not None:
+        out["switched_off_after_failures_in_a_row"] = disabled
+    return out
 
 
 def wilson(wins, n, z=1.96):
@@ -323,6 +339,11 @@ def run_job(job):
         job["result"] = summarize(spec, parsed, seeds)
         if spec.get("llm"):
             job["result"]["llm"] = llm_summary(spec["llm"], out_lines)
+            if "switched_off_after_failures_in_a_row" in job["result"]["llm"]:
+                job["result"]["warnings"].append(
+                    "the model seats switched themselves off after %d failures in a row (usually timeouts: late-game prompts are thousands of tokens "
+                    "and the model server could not read them in time); phase's own AI played the rest of the run, so the later moves are NOT the model's"
+                    % job["result"]["llm"]["switched_off_after_failures_in_a_row"])
             job["result"]["warnings"].append(
                 "model seats %s: the model is asked about each non-forced decision, up to %d calls for the whole run; an answer the engine "
                 "cannot use, a timeout, or any decision after the cap is played by phase's own AI instead" % (spec["llm"]["seats"], spec["llm"]["max_calls"]))
@@ -383,7 +404,7 @@ def public(job):
 def forward(url, data, headers):
     req = urllib.request.Request(url, data=data, headers=dict({"content-type": "application/json"}, **headers))
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=RELAY_TIMEOUT) as r:
             return r.status, json.loads(r.read() or b"{}")
     except urllib.error.HTTPError as exc:
         try:

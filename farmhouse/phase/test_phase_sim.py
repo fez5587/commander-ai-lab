@@ -258,6 +258,14 @@ summ = P.llm_summary({"seats": [1], "kind": "chat", "model": "m", "max_calls": 9
                      ["LLM-SEAT seat=1 asked=25 used=20 total_calls=25", "noise", "LLM-SEAT seat=1 asked=50 used=41 total_calls=50"])
 ck("the model seats' counters are read from the engine's output (last value wins)", summ["per_seat"] == {1: {"asked": 50, "used": 41}}, summ)
 
+summ2 = P.llm_summary({"seats": [1], "kind": "chat", "model": "m", "max_calls": 9},
+                      ["LLM-SEAT seat=1 asked=25 used=1 total_calls=25 timeouts=20 avg_ms=1800 avg_prompt_chars=31000",
+                       "LLM-SEAT-DISABLED after 4 consecutive failures (20 timeouts of 25 questions): phase's own AI plays the rest"])
+ck("cost counters and the circuit-breaker are read from the engine's output", summ2["timeouts"] == 20 and summ2["avg_ms"] == 1800
+   and summ2["avg_prompt_chars"] == 31000 and summ2["switched_off_after_failures_in_a_row"] == 4 and summ2["per_seat"] == {1: {"asked": 25, "used": 1}}, summ2)
+ck("old three-field counter lines still parse", P.llm_summary({"seats": [1], "kind": "chat", "model": "m", "max_calls": 9},
+   ["LLM-SEAT seat=2 asked=25 used=24 total_calls=25"])["per_seat"] == {2: {"asked": 25, "used": 24}})
+
 code, r = call("/llm/v1/chat/completions", {"model": "m", "messages": []})
 ck("over HTTP from this machine the chat relay answers", code == 200 and r["echo"] is True, (code, r))
 print("\nFAILURES: %d" % FAILS)

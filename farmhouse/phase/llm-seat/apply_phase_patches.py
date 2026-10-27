@@ -54,7 +54,15 @@ pub fn install_action_override(hook: ActionOverride) -> bool {
 edit("crates/phase-ai/src/auto_play.rs", [
     ("use crate::search::choose_action_with_session;\n", HOOK),
     ("    let action = match choose_action_with_session(state, semantic_owner, config, rng, session) {\n        Some(action) => action,\n        None => {\n            tracing::warn!(player = ?actor, \"choose_action returned None",
-     "    let farmhouse_choice = ACTION_OVERRIDE\n        .get()\n        .and_then(|hook| hook(&*state, &contract, semantic_owner, actor));\n"
+     "    // The override's pick must be one the engine will really APPLY, not only one it lists: a model chose both modes of a modal spell whose\n"
+     "    // entwine cost it could not pay, the contract listed the option, apply refused it, and the whole game stalled (2026-10-27). Try it on a\n"
+     "    // copy of the game first; anything the engine refuses is dropped and the built-in AI plays the move. (Stack-pass rechecks have their\n"
+     "    // own verified path and are left alone.)\n"
+     "    let farmhouse_choice = ACTION_OVERRIDE\n        .get()\n        .and_then(|hook| hook(&*state, &contract, semantic_owner, actor))\n"
+     "        .filter(|candidate| {\n"
+     "            verified_ai_stack_pass_player(&*state, candidate).is_some()\n"
+     "                || apply_interaction(&mut (*state).clone(), actor, semantic_owner, candidate.clone()).is_ok()\n"
+     "        });\n"
      "    let action = match farmhouse_choice\n        .or_else(|| choose_action_with_session(state, semantic_owner, config, rng, session))\n    {\n        Some(action) => action,\n        None => {\n            tracing::warn!(player = ?actor, \"choose_action returned None"),
 ])
 edit("crates/phase-ai/src/bin/ai_commander.rs", [("\nfn main() {\n", "\npub fn main() {\n")])

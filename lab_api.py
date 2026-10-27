@@ -38,6 +38,7 @@ from routes.lab import router as lab_router
 from routes.scanner import router as scanner_router
 from routes.rag import router as rag_router
 from routes.deepseek import router as deepseek_router
+from routes.farmhouse_phase import router as farmhouse_phase_router  # FARMHOUSE_PHASE_IMPORT
 from routes.deckgen import router as deckgen_router
 from routes.coach import router as coach_router, init_coach_service
 from routes.ml import router as ml_router
@@ -129,6 +130,7 @@ app.include_router(deckbuilder_router)
 app.include_router(precon_router)
 app.include_router(import_router)
 app.include_router(lab_router)
+app.include_router(farmhouse_phase_router)
 app.include_router(scanner_router)
 app.include_router(rag_router)
 app.include_router(deepseek_router)

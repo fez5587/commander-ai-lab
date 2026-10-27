@@ -56,6 +56,13 @@ Forge's concrete priority path, extra typed questions in the same call, a captur
 How it fits the strategic-intelligence work, what is measured and how to fine-tune: [docs/LAYA-CONNECTIONS.md](docs/LAYA-CONNECTIONS.md). Reference copies of the Laya
 image, manifests and CI are in `farmhouse/laya/`.
 
+### Forge, and rules-accurate simulation with phase-rs
+- **Forge is installed** in the cluster image (it was left out by mistake): `farmhouse/forge/README.md`. Batches are clamped to one game at a time (`FORGE_MAX_THREADS`).
+- **Rules-accurate simulation** through the phase-rs engine (Rust, headless): `routes/farmhouse_phase.py`, `ui/phase-sim.html` (linked from the home page) and the service in
+  `farmhouse/phase/`. Four saved decks play real Commander games; the page shows wins by seat with a 95% interval and warns about cards the engine did not recognise.
+  Seats can be put on a **model** (twin-turbo through Olla, or Laya): the model chooses among the engine's own legal options only, anything wrong or slow is played by phase's AI,
+  and a call cap bounds the cost (`farmhouse/phase/README.md`). Assessment and plan: `docs/PHASE-AND-PLAYTESTER.md`.
+
 ## Settings (environment variables)
 | Variable | Meaning |
 |---|---|

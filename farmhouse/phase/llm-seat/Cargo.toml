@@ -1,0 +1,26 @@
+[package]
+name = "farmhouse-llm-seat"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+publish = false
+
+# FarmHouse: phase's headless four-player Commander runner (`ai-commander`) with MODEL-DRIVEN SEATS. The runner's own source is included
+# as a module (src/main.rs, #[path]); this crate adds only the network transport phase-llm deliberately leaves to the host. phase-llm
+# depends on phase-ai, so the hook cannot live inside phase-ai's own binary: a new crate that depends on both is the way round that.
+
+[[bin]]
+name = "ai-commander-llm"
+path = "src/main.rs"
+
+[dependencies]
+engine = { path = "../engine", package = "phase-engine" }
+phase-ai = { path = "../phase-ai" }
+phase-llm = { path = "../phase-llm" }
+serde = { workspace = true }
+serde_json = "1"
+rand = "0.9"
+tracing = "0.1"
+mimalloc = "0.1"
+# Blocking HTTP, no TLS: the model endpoints are cluster-internal http:// relays (phase-sim's own /llm and /jev routes).
+ureq = { version = "2", default-features = false }

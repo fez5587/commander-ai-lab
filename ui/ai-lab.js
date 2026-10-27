@@ -177,7 +177,8 @@ const AiLab = (() => {
                 <div class="lab-control-group">
                     <label>Engine:</label>
                     <select id="lab-engine">
-                        <option value="deepseek" selected>LLM opponents (twin-turbo)</option>
+                        <option value="java" selected>Forge Heuristic</option>
+                        <option value="deepseek">LLM opponents (twin-turbo)</option>
                     </select>
                 </div>
                 <button class="lab-run-btn" id="lab-run-btn" onclick="AiLab.startBatch()">

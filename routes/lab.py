@@ -98,6 +98,7 @@ async def start_batch(req: StartRequest, background_tasks: BackgroundTasks):
     if req.threads < 1 or req.threads > 32:
         raise HTTPException(400, "threads must be 1-32")
 
+    req.threads = min(req.threads, int(os.environ.get("FORGE_MAX_THREADS", "1")))  # FARMHOUSE_FORGE_THREADS
     if not os.path.exists(CFG.forge_jar):
         raise HTTPException(500, f"Forge JAR not found: {CFG.forge_jar}")
     if not os.path.isdir(CFG.forge_dir):

@@ -1,0 +1,111 @@
+# phase-sim (phase/Dockerfile): rules-accurate four-player Commander games over a small HTTP API. Only the app may call it; it has no
+# network and no volume (engine and card data are in the image). One game at a time, CPU heavy.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase-sim
+  namespace: commander-lab
+  labels: {app: phase-sim}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: phase-sim}
+  template:
+    metadata:
+      labels: {app: phase-sim}
+    spec:
+      automountServiceAccountToken: false
+      # A Service named like the app injects PHASE_SIM_* variables into the pod; nothing here wants them (the same kind of collision
+      # crash-looped Laya on LAYA_PORT).
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ghcr-pull
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: phase-sim
+          image: ghcr.io/fez5587/farmhouse-phase-sim:v1-llm      # -llm = the baseline plus ai-commander-llm (model seats)
+          ports:
+            - {name: http, containerPort: 8090}
+          env:
+            - {name: PORT, value: "8090"}
+            - {name: PHASE_SIM_MAX_GAMES, value: "50"}
+            - {name: PHASE_SIM_TIMEOUT, value: "3600"}
+            # Model seats. The engine talks to THIS service's loopback-only relays, which forward to these (see phase_sim.py): chat = an
+            # OpenAI-style endpoint (Olla -> twin-turbo; the relay switches thinking off and caps the answer), decision = a System One server
+            # (Laya / Kev; the deployment is scaled to 0 until it is fine-tuned, so a decision-seat run answers 502 and falls back to phase's AI).
+            - {name: PHASE_LLM_CHAT_URL, value: "http://olla.ai-system.svc.cluster.local:40114/olla/openai/v1"}
+            - {name: PHASE_LLM_DECISION_URL, value: "http://laya.commander-lab.svc.cluster.local:8080/v1/systemone"}
+            - {name: PHASE_LLM_REASONING, value: "none"}
+            - {name: PHASE_LLM_MAX_TOKENS_CAP, value: "256"}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+          resources:
+            requests: {cpu: "500m", memory: 1Gi}
+            limits: {cpu: "3", memory: 3Gi}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 30
+            failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {sizeLimit: 512Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phase-sim
+  namespace: commander-lab
+spec:
+  type: ClusterIP
+  selector: {app: phase-sim}
+  ports:
+    - {name: http, port: 8090, targetPort: http}
+---
+# IN: only the app. OUT: DNS and the two model endpoints the relays use (Olla for the chat model, Laya for the decision model); nothing else.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phase-sim
+  namespace: commander-lab
+spec:
+  podSelector:
+    matchLabels: {app: phase-sim}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: commander-lab}
+      ports:
+        - {protocol: TCP, port: 8090}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: kube-system}
+          podSelector:
+            matchLabels: {k8s-app: kube-dns}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: ai-system}
+          podSelector:
+            matchLabels: {app.kubernetes.io/name: olla}
+      ports:
+        - {protocol: TCP, port: 40114}
+    - to:
+        - podSelector:
+            matchLabels: {app: laya}
+      ports:
+        - {protocol: TCP, port: 8080}

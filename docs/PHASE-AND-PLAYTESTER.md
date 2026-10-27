@@ -54,6 +54,17 @@ the engine-smoke gate that boots the real engine and plays a match to completion
    heuristic-only, LLM and Laya seats. Record every decision for the Laya dataset.
 4. **Only then** consider the playtester's UI ideas, after the author adds a licence or as a clean reimplementation.
 
+## What was built from this plan (2026-10-27)
+1. **The headless runner** (`ai-commander`, Commander four-player, batch mode) is built from the v0.118.0 tag with the card database that release was published with, in a
+   container (`farmhouse/phase/Dockerfile`). Not `ai-duel` for the decks: `ai-commander` takes a feed JSON of four decks, which is exactly what the app has.
+2. **The service and the app side**: `farmhouse/phase/phase_sim.py` (HTTP, jobs, parser, warnings) and `routes/farmhouse_phase.py` + `ui/phase-sim.html`. Games that stall, hit the
+   action cap or panic are reported and never counted.
+3. **Model seats**: not a setting. phase's model support lives only in its browser client (`engine-wasm` calls `phase-llm`; the HTTP is done by TypeScript), and
+   `phase-llm` depends on `phase-ai`, so the headless binary cannot use it. `farmhouse/phase/llm-seat/` is a new crate that includes the runner and installs a hook
+   (two anchored edits to phase's source). The server-side Jev relay and the browser client were not needed. Details: `farmhouse/phase/README.md`.
+Not done: the playtester's UI (no licence), a Python client for phase's WebSocket server (a large, fast-moving protocol), feeding the captured model-seat decisions into
+`scripts/farmhouse_laya_dataset.py` (the natural next step: each is an engine-issued option list plus a pick).
+
 ## Risks and open questions
 - Phase is a one-person, fast-moving project: pin tags, keep a smoke test that plays a full game, expect breaking changes.
 - Rust builds are heavy; keep them in CI/containers. Resource and image size are unmeasured.

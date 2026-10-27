@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commander AI Lab — Rules-accurate simulation</title>
+<link rel="stylesheet" href="global.css">
+<style>
+  .ps-wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  .ps-wrap h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  .ps-sub { opacity: .75; margin: 0 0 20px; }
+  .ps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .ps-seat { border: 1px solid rgba(255,255,255,.14); border-radius: 10px; padding: 10px; }
+  .ps-seat label, .ps-row label { display: block; font-size: .75rem; opacity: .7; margin-bottom: 4px; letter-spacing: .04em; text-transform: uppercase; }
+  .ps-seat select, .ps-row select, .ps-row input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.05); color: inherit; }
+  .ps-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 16px; }
+  .ps-row > div { flex: 1 1 140px; }
+  .ps-btn { padding: 10px 20px; border-radius: 8px; border: 0; background: #22c55e; color: #04200d; font-weight: 700; cursor: pointer; }
+  .ps-btn:disabled { opacity: .5; cursor: default; }
+  .ps-note { padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,.06); margin: 10px 0; font-size: .9rem; }
+  .ps-warn { background: rgba(245,158,11,.16); border: 1px solid rgba(245,158,11,.5); }
+  .ps-err { background: rgba(239,68,68,.16); border: 1px solid rgba(239,68,68,.5); }
+  table.ps-t { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  table.ps-t th, table.ps-t td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: .92rem; }
+  .ps-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.1); overflow: hidden; margin: 10px 0; }
+  .ps-bar > div { height: 100%; background: #22c55e; width: 0; transition: width .4s; }
+  .ps-mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .82rem; opacity: .85; }
+</style>
+</head>
+<body>
+<div class="ps-wrap">
+  <p><a href="index.html">&larr; Commander AI Lab</a></p>
+  <h1>Rules-accurate simulation</h1>
+  <p class="ps-sub">Four of your saved decks play full Commander games on the phase-rs rules engine (real stack, priority, combat, layers and triggers). Every seat is played by the engine's AI. Games that stall or hit the action cap are reported, never counted as wins.</p>
+
+  <div id="ps-engine" class="ps-note">Checking the engine&hellip;</div>
+
+  <div class="ps-grid" id="ps-seats"></div>
+  <div class="ps-row">
+    <div><label for="ps-games">Games (1&ndash;50)</label><input id="ps-games" type="number" min="1" max="50" value="4"></div>
+    <div><label for="ps-seed">Seed</label><input id="ps-seed" type="number" value="1"></div>
+    <div><label for="ps-diff">AI difficulty</label>
+      <select id="ps-diff"><option>VeryEasy</option><option>Easy</option><option selected>Medium</option><option>Hard</option><option>VeryHard</option></select></div>
+    <div><label for="ps-model">Seats ticked "model plays" use</label>
+      <select id="ps-model"><option value="chat:twin-turbo">twin-turbo (language model)</option><option value="decision:">Laya (decision model)</option></select></div>
+    <div style="flex:0 0 auto"><button class="ps-btn" id="ps-run">Run games</button></div>
+  </div>
+  <div class="ps-note">A ticked seat is played by the model instead of phase's built-in AI. The model only chooses among the engine's own legal options (it cannot invent a move), is asked at most 300 questions per run, and anything it gets wrong or is too slow for is played by the built-in AI. Model seats take much longer than built-in AI seats.</div>
+
+  <div id="ps-msg"></div>
+  <div class="ps-bar" id="ps-barwrap" hidden><div id="ps-bar"></div></div>
+  <div id="ps-result"></div>
+</div>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var seats = $("ps-seats"), selects = [], ticks = [], timer = null;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function note(cls, text) { var n = el("div", "ps-note " + (cls || ""), text); $("ps-msg").replaceChildren(n); }
+  function pct(x) { return x == null ? "n/a" : (100 * x).toFixed(0) + "%"; }
+
+  fetch("/api/farmhouse/phase/status").then(function (r) { return r.json().then(function (j) { return [r.ok, j]; }); }).then(function (a) {
+    var ok = a[0] && a[1].ok;
+    $("ps-engine").className = "ps-note" + (ok ? "" : " ps-err");
+    $("ps-engine").textContent = ok ? "Engine ready: " + a[1].engine + " (" + a[1].queued + " waiting, up to " + a[1].max_games + " games a run)."
+                                    : "The rules engine service is not available" + (a[1].detail ? " (" + a[1].detail + ")" : "") + ".";
+    $("ps-run").disabled = !ok;
+  }).catch(function () { $("ps-engine").className = "ps-note ps-err"; $("ps-engine").textContent = "The rules engine service is not reachable."; $("ps-run").disabled = true; });
+
+  fetch("/api/decks").then(function (r) { return r.json(); }).then(function (d) {
+    var decks = Array.isArray(d) ? d : (d.decks || []);
+    for (var i = 0; i < 4; i++) {
+      var box = el("div", "ps-seat"), lab = el("label", "", "Seat " + (i + 1)), sel = el("select");
+      sel.appendChild(new Option("Pick a deck", ""));
+      decks.forEach(function (k) { sel.appendChild(new Option(k.name + (k.commander_name ? " — " + k.commander_name : ""), k.id)); });
+      if (decks[i]) sel.value = decks[i].id;
+      var tick = el("label", ""), cb = el("input"); cb.type = "checkbox"; cb.style.cssText = "width:auto;margin-right:6px";
+      tick.style.cssText = "margin-top:8px;text-transform:none;letter-spacing:0;font-size:.85rem"; tick.appendChild(cb); tick.appendChild(document.createTextNode("model plays this seat"));
+      box.appendChild(lab); box.appendChild(sel); box.appendChild(tick); seats.appendChild(box); selects.push(sel); ticks.push(cb);
+    }
+  });
+
+  function render(j) {
+    var r = j.result, out = $("ps-result"), box = el("div");
+    if (!r) { out.replaceChildren(); return; }
+    (r.warnings || []).forEach(function (w) { box.appendChild(el("div", "ps-note ps-warn", w)); });
+    var t = el("table", "ps-t"), head = el("tr");
+    ["Seat", "Deck", "Wins", "Win rate", "95% interval"].forEach(function (h) { head.appendChild(el("th", "", h)); });
+    t.appendChild(head);
+    r.decks.forEach(function (d) {
+      var tr = el("tr");
+      [d.seat + 1, d.name, d.wins, pct(d.win_rate), pct(d.win_rate_95[0]) + " – " + pct(d.win_rate_95[1])].forEach(function (c) { tr.appendChild(el("td", "", String(c))); });
+      t.appendChild(tr);
+    });
+    box.appendChild(t);
+    box.appendChild(el("div", "ps-note", r.games_finished + " of " + r.games_requested + " games finished" + (r.draws ? " (" + r.draws + " draws)" : "") +
+      (r.avg_turns != null ? ", average " + r.avg_turns + " turns" : "") + (j.seconds ? ", " + Math.round(j.seconds) + " s." : ".")));
+    if (r.llm) {
+      var seatsTxt = Object.keys(r.llm.per_seat || {}).map(function (k) { var v = r.llm.per_seat[k]; return "seat " + (parseInt(k, 10) + 1) + ": asked " + v.asked + ", used " + v.used; }).join("; ");
+      box.appendChild(el("div", "ps-note", "Model seats (" + r.llm.model + ", " + r.llm.kind + "): " + (seatsTxt || "no counters were reported") + ". Questions the model could not answer in time or correctly were played by the built-in AI."));
+    }
+    var g = el("div", "ps-mono");
+    r.games.forEach(function (x) {
+      g.appendChild(el("div", "", "seed " + x.seed + ": " + x.status + (x.winner_seat != null ? ", seat " + (x.winner_seat + 1) + " won" : "") +
+        (x.turns != null ? ", " + x.turns + " turns" : "") + (x.eliminated && x.eliminated.length ? ", out: " + x.eliminated.map(function (e) { return "seat " + (e.seat + 1) + " (turn " + e.turn + ")"; }).join(", ") : "")));
+    });
+    box.appendChild(g);
+    out.replaceChildren(box);
+  }
+
+  function poll(job) {
+    fetch("/api/farmhouse/phase/job/" + job).then(function (r) { return r.json(); }).then(function (j) {
+      var total = j.games_requested || 1;
+      $("ps-barwrap").hidden = false; $("ps-bar").style.width = Math.min(100, 100 * (j.games_done || 0) / total) + "%";
+      if (j.status === "done" || j.status === "error") {
+        clearInterval(timer); $("ps-run").disabled = false; $("ps-barwrap").hidden = true;
+        if (j.status === "error") note("ps-err", j.error || "The run failed.");
+        else note("", "Finished.");
+        render(j);
+      } else {
+        note("", (j.status === "queued" ? "Waiting for the engine" : "Playing") + ": " + (j.games_done || 0) + " of " + total + " games done" + (j.seconds ? " (" + Math.round(j.seconds) + " s)." : "."));
+      }
+    }).catch(function () { note("ps-err", "Lost contact with the engine service; retrying."); });
+  }
+
+  function payload(ids) {
+    var p = { deckIds: ids, games: parseInt($("ps-games").value, 10) || 1, seed: parseInt($("ps-seed").value, 10) || 1, difficulty: $("ps-diff").value };
+    var modelSeats = [];
+    ticks.forEach(function (cb, i) { if (cb.checked) modelSeats.push(i); });
+    if (modelSeats.length) {
+      var m = $("ps-model").value.split(":");
+      p.llmSeats = modelSeats;
+      p.llm = { kind: m[0], model: m[1] || "decision-model", max_calls: 300 };
+    }
+    return p;
+  }
+
+  $("ps-run").addEventListener("click", function () {
+    var ids = selects.map(function (s) { return parseInt(s.value, 10); });
+    if (ids.some(isNaN)) { note("ps-err", "Pick a deck for all four seats."); return; }
+    $("ps-run").disabled = true; $("ps-result").replaceChildren(); note("", "Starting…");
+    fetch("/api/farmhouse/phase/run", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload(ids)) })
+      .then(function (r) { return r.json().then(function (j) { return [r.ok, j]; }); })
+      .then(function (a) {
+        if (!a[0]) { $("ps-run").disabled = false; note("ps-err", a[1].detail || a[1].error || "The request was refused."); return; }
+        poll(a[1].job); timer = setInterval(function () { poll(a[1].job); }, 4000);
+      }).catch(function () { $("ps-run").disabled = false; note("ps-err", "Could not start the run."); });
+  });
+})();
+</script>
+</body>
+</html>

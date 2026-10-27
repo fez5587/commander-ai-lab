@@ -106,6 +106,11 @@ def ask(snap, actions=None):
     headers = {"content-type": "application/json"}
     if os.environ.get("DECISION_API_KEY"):
         headers["authorization"] = "Bearer " + os.environ["DECISION_API_KEY"]
+    try:  # extra questions ride in the same forward pass (farmhouse_laya.py); optional when the package is not importable
+        from commander_ai_lab.sim import farmhouse_laya as _L
+        body["questions"].update(_L._extra_questions())
+    except ImportError:
+        _L = None
     t0 = time.time()
     try:
         req = urllib.request.Request(url.rstrip("/") + "/v1/systemone", data=json.dumps(body).encode(), headers=headers)
@@ -118,7 +123,10 @@ def ask(snap, actions=None):
         with _lock:
             _fail["n"] = 0
         return {"choice": choice, "confidence": float(probs.get(choice, ans.get("answer_confidence", 0.0))),
-                "probabilities": probs, "ms": round((time.time() - t0) * 1000, 1), "model": model or "auto"}
+                "probabilities": probs, "ms": round((time.time() - t0) * 1000, 1), "model": model or "auto",
+                "extras": _L._extras(out["answers"]) if _L else {}, "state_text": body["state"]["body"],
+                "options": {a: ACTION_HELP[a] for a in acts},
+                "csie_selected": ((snap.get("strategic_advice") or {}).get("ranking") or {}).get("selected_id")}
     except Exception:
         with _lock:
             _fail["n"] += 1
@@ -150,6 +158,13 @@ def record(answer, llm_action):
         row = STATS["by_action"].setdefault(llm_action, {"n": 0, "agreed": 0})
         row["n"] += 1
         row["agreed"] += 1 if agree else 0
+    try:  # one laya-shadow-v1 line per comparison: the raw material for fine-tuning (scripts/farmhouse_laya_dataset.py)
+        from commander_ai_lab.sim import farmhouse_laya as _L
+        _L.capture({"source": "farmhouse", "state_text": answer.get("state_text"), "options": answer.get("options"),
+                    "laya": {k: answer.get(k) for k in ("choice", "confidence", "probabilities", "extras", "ms", "model")},
+                    "labels": {"llm": llm_action, "csie": answer.get("csie_selected")}})
+    except ImportError:
+        pass
 
 
 def stats():

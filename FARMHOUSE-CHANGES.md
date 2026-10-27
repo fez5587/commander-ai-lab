@@ -50,6 +50,12 @@ sure; `off` (default) does nothing. `scripts/farmhouse_decision_eval.py` replays
 guessing the commonest action** (English 16.1%, typed-decisions 18.6%, baseline 27.5%), at 2-4 s per answer on a 4-thread CPU. It is only
 worth using after fine-tuning on this game's decisions; the write-up is `LAYA-EVALUATION.md` in the farmhouse-os repo's commander-lab folder.
 
+### Laya connections (all off by default)
+Forge's concrete priority path, extra typed questions in the same call, a capture log, a fine-tuning dataset exporter, and card-role classification:
+`src/commander_ai_lab/sim/farmhouse_laya.py`, `scripts/farmhouse_laya_dataset.py`, `scripts/farmhouse_laya_roles_eval.py`, tests `tests/farmhouse/test_farmhouse_laya*.py`.
+How it fits the strategic-intelligence work, what is measured and how to fine-tune: [docs/LAYA-CONNECTIONS.md](docs/LAYA-CONNECTIONS.md). Reference copies of the Laya
+image, manifests and CI are in `farmhouse/laya/`.
+
 ## Settings (environment variables)
 | Variable | Meaning |
 |---|---|

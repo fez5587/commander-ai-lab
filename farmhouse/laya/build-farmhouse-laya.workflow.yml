@@ -1,0 +1,96 @@
+name: Build FarmHouse Laya
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "infrastructure/apps/commander-lab/laya/**"
+      - ".github/workflows/build-farmhouse-laya.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/farmhouse-laya
+      # Bump together with the image tag in infrastructure/apps/commander-lab/deployment-laya.yaml.
+      IMAGE_TAG: v1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image name lowercase
+        shell: bash
+        run: |
+          echo "IMAGE=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build validation image
+        uses: docker/build-push-action@v6
+        with:
+          context: infrastructure/apps/commander-lab/laya
+          load: true
+          push: false
+          tags: laya:test
+
+      # The service must answer with NO network (that is how it runs in the cluster) as the unprivileged user, for both checkpoints.
+      - name: Smoke test (boots offline, answers a game-state question with both checkpoints)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name laya --network none laya:test
+          cat > /tmp/ask.py <<'PY'
+          import json, sys, time, urllib.request
+          model = sys.argv[1]
+          body = {"model": model,
+                  "state": {"body": "Turn 4. You have 4 lands untapped. Hand: Llanowar Elves, Swords to Plowshares, Forest. Opponent has a 6/6 creature attacking you."},
+                  "questions": {"action": {"type": "choice", "instructions": "Which action is best this turn?",
+                                           "criteria": {"cast_creature": "put a creature onto the battlefield",
+                                                        "cast_removal": "destroy or exile an opposing permanent",
+                                                        "play_land": "play a land",
+                                                        "hold": "do nothing this turn"}}}}
+          req = urllib.request.Request("http://127.0.0.1:8080/v1/systemone", data=json.dumps(body).encode(), headers={"content-type": "application/json"})
+          t = time.time()
+          out = json.load(urllib.request.urlopen(req, timeout=120))
+          print(model, "%.0f ms" % ((time.time() - t) * 1000), json.dumps(out)[:600])
+          assert "answers" in out and "action" in out["answers"], out
+          PY
+          docker cp /tmp/ask.py laya:/tmp/ask.py
+          ok=0
+          for i in $(seq 1 120); do
+            if docker exec laya python -c "import socket; socket.create_connection(('127.0.0.1', 8080), 2)" 2>/dev/null; then ok=1; break; fi
+            sleep 3
+          done
+          if [ "$ok" != 1 ]; then echo "laya did not open its port"; docker logs laya | tail -60; exit 1; fi
+          for m in english typed-decisions; do docker exec laya python /tmp/ask.py "$m"; done
+          docker exec laya id
+          docker rm -f laya >/dev/null
+          echo SMOKE OK
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: infrastructure/apps/commander-lab/laya
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}

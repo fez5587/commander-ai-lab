@@ -547,6 +547,21 @@ def build_quick_system_prompt(report: DeckReport,
 
 def build_user_prompt(report: DeckReport,
                       candidates: Dict[str, List[dict]] = None,
+                      rag_cards: List[dict] = None,
+                      rules_context: List[dict] = None) -> str:  # FARMHOUSE_RULES_CONTEXT
+    text = _farmhouse_build_user_prompt(report, candidates, rag_cards)
+    rules = []
+    for item in (rules_context or [])[:3]:
+        body = (item.get('text') or item.get('document') or item.get('content')) if isinstance(item, dict) else str(item)
+        if body:
+            rules.append('- ' + str(body).strip()[:700])
+    if rules:
+        text += '\n\n## Relevant rules (for grounding; do not quote them back)\n' + '\n'.join(rules)
+    return text
+
+
+def _farmhouse_build_user_prompt(report: DeckReport,
+                      candidates: Dict[str, List[dict]] = None,
                       rag_cards: List[dict] = None) -> str:
     """Build the user prompt with full deck report data.
 
